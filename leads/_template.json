@@ -1,0 +1,29 @@
+{
+
+  "company": "<Replace with company name, e.g. Egnyte>",
+  "website": "https://example.com",
+  "prospectName": "<Specific person if known, otherwise empty string>",
+  "prospectTitle": "<Their title — drives technical-vs-business framing in the brief>",
+
+  "aeName": "Spenser",
+  "aeEmail": "spenserchun@arvayaconsulting.com",
+  "meetingAt": "2026-01-01T00:00:00Z",
+
+  "dealStage": "warm",
+  "prospectArchetype": "aec_vendor",
+  "excludeKeywords": [],
+
+  "productFocus": "AI consulting and implementation",
+  "engagementShape": "<e.g. fixed-scope discovery sprint (2 weeks), advisory retainer, implementation engagement, training and enablement, staff augmentation>",
+  "meetingType": "first_intro",
+  "introSource": "event",
+  "introContext": "<Free-form: how the meeting came about. e.g. 'Met an Egnyte PM at the AECTech 2026 booth, they volunteered the AI roadmap is bottlenecked on ML headcount.'>",
+
+  "callObjective": "<ONE sentence: what you want out of THIS specific meeting (not the deal). The Writer will use this verbatim. e.g. 'Validate that <prospect>'s <specific gap> is real and severe enough to justify a 2-week discovery sprint.'>",
+
+  "hypothesis": "<2–3 sentences: your prior on the prospect's biggest pain. The Researcher will test it (validate or contradict via a dedicated breadth-scan call); the Writer leads with it if confirmed and soft-pivots if disconfirmed. Be specific. e.g. '<Prospect>'s product does X well but does not yet do Y. Their customers are asking for Y. They likely lack the in-house ML org to ship Y, so build-vs-partner is live.'>",
+
+  "meetingContext": "<Multi-line narrative of how the meeting came about and what's at stake. The Writer uses this to set tone and pick icebreaker register but never quotes it directly. Mention prior conversations, what the prospect signaled, what would count as a successful outcome from this meeting.>",
+
+  "competitiveContext": []
+}

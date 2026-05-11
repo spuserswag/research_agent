@@ -1,0 +1,34 @@
+{
+  "company": "Quantum Reality Capture",
+  "ticker": null,
+  "domain": "quantumrealitycapture.com",
+  "ae": "Account Executive",
+  "meeting_date": "+2",
+  "out_dir": "examples/QUANTUM",
+  "coverage_days": 540,
+
+  "industry_kinds": ["construction"],
+  "include_linkedin": true,
+  "include_federal": true,
+  "strategist": true,
+  "audience": "cto",
+
+  "disambiguators": ["charleston", "south carolina", "sc"],
+
+  "aliases": [
+    "Quantum Reality Capture LLC",
+    "Quantum Reality Capture, LLC",
+    "QRC"
+  ],
+
+  "seed_urls": [
+    "https://www.quantumrealitycapture.com/",
+    "https://www.quantumrealitycapture.com/about/",
+    "https://quantumrealitycapture.com/team/",
+    "https://www.quantumrealitycapture.com/services/",
+    "https://quantumrealitycapture.com/contact/",
+    "https://www.qrcgov.com/",
+    "https://www.linkedin.com/company/quantum-reality-capture",
+    "https://www.zoominfo.com/pic/quantum-reality-capture/1322569383"
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "company": "Joist AI",
+  "website": "https://joist.ai",
+  "prospectName": "",
+  "prospectTitle": "CEO or Head of Product",
+  "aeName": "Spenser",
+  "aeEmail": "spenserchun@arvayaconsulting.com",
+  "meetingAt": "2026-05-21T15:00:00Z",
+  "dealStage": "cold",
+  "prospectArchetype": "aec_vendor",
+  "excludeKeywords": [
+    "Joist app",
+    "joist.app",
+    "consumer contractor",
+    "estimating software for contractors",
+    "homeowner",
+    "remodel"
+  ],
+
+  "productFocus": "AI consulting and implementation",
+  "engagementShape": "advisory retainer covering Q3, with option to convert into an implementation engagement",
+  "meetingType": "first_intro",
+  "introSource": "cold_outbound",
+  "introContext": "AE found Joist AI on the AECTech 2026 sponsor list and reached out via their site form. No referral; no prior relationship.",
+
+  "callObjective": "Determine whether Joist AI's AI proposal-writing product is the start of a broader AI-for-AEC-marketing platform play, or a feature in someone else's roadmap. Decide if there is a credible advisory engagement to propose.",
+
+  "hypothesis": "Joist AI's proposal-writing AI is a wedge product, not the destination. The CEO/Head of Product is thinking about whether to extend into adjacent AEC marketing/BD workflows (RFP tracking, win/loss analysis, account intelligence). They likely have ML talent for the wedge but not enough to ship a platform — Arvaya's advisory + selective implementation help could shorten that path.",
+
+  "meetingContext": "Cold outbound. The AE has read the company's public marketing but has no prior conversation history. This call is intent-discovery: figure out where Joist AI's roadmap actually points and whether Arvaya's wedge fits.",
+
+  "competitiveContext": ["in-house build", "OpenAsset (adjacent vendor with proposal-related features)", "Generative AI features inside Salesforce/Hubspot"]
+}

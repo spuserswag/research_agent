@@ -1,0 +1,29 @@
+{
+  "company": "Seev",
+  "prospectName": "",
+  "prospectTitle": "Founder or Head of Product",
+  "aeName": "Spenser",
+  "aeEmail": "spenserchun@arvayaconsulting.com",
+  "meetingAt": "2026-05-21T15:00:00Z",
+  "dealStage": "cold",
+  "prospectArchetype": "aec_vendor",
+  "excludeKeywords": [
+    "Seev.com hiring platform",
+    "seev recruiting",
+    "Saudi"
+  ],
+
+  "productFocus": "AI consulting and implementation",
+  "engagementShape": "advisory engagement (small) — early-stage scoping, not implementation yet",
+  "meetingType": "first_intro",
+  "introSource": "event",
+  "introContext": "Saw the Seev booth on the AECTech 2026 floor; Spenser has no specific contact and no prior conversation.",
+
+  "callObjective": "Find out what Seev actually does end-to-end (the public marketing is thin), and whether there is a real AI roadmap that an Arvaya advisory engagement could help scope.",
+
+  "hypothesis": "Seev is a small early-stage company with a focused product around design/construction process visibility. Their AI story is likely thin — either they're using off-the-shelf models for one feature, or they don't have an AI product yet but see a need. The advisory engagement Arvaya could pitch is small in scope; the right framing is helping them figure out where AI buys them defensibility.",
+
+  "meetingContext": "Tier C target on the AEC vendor list. Public footprint is thin — expect the SourcePack to come back light and the brief to invoke the soft-minimum (src-meta-thin) path. The AE wants to walk in knowing whatever the public web does say about them.",
+
+  "competitiveContext": ["in-house build", "broader AEC platforms (Procore, Autodesk Construction Cloud) absorbing similar visibility features"]
+}

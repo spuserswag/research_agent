@@ -1,0 +1,27 @@
+{
+  "company": "Northwind Logistics",
+  "website": "https://northwindlogistics.com",
+  "prospectName": "Pat Lee",
+  "prospectTitle": "VP Data",
+  "aeName": "Jordan",
+  "aeEmail": "jordan@arvayaconsulting.com",
+  "meetingAt": "2026-05-12T15:00:00Z",
+
+  "dealStage": "warm",
+  "prospectArchetype": "other",
+  "excludeKeywords": ["Northwind database sample", "AdventureWorks", "Northwind Pump"],
+
+  "productFocus": "RAG implementation",
+  "engagementShape": "fixed-scope discovery sprint (2 weeks), with optional implementation phase",
+  "meetingType": "discovery",
+  "introSource": "inbound",
+  "introContext": "Pat reached out via the Arvaya site after reading our case study on RAG over operational telemetry. They asked specifically about how we'd approach evaluation for a self-service analytics product.",
+
+  "callObjective": "Confirm whether the Q3 self-service yard-analytics launch is funded, and identify who owns the vendor evaluation alongside Pat.",
+
+  "hypothesis": "Northwind is committed to shipping a self-service analytics product by Q3 but has under-invested in the data-orchestration layer that a RAG implementation depends on. Their VP AI Engineering hire (Feb 2026) signals an in-house build instinct, so the meeting is a real choose-build-or-buy moment.",
+
+  "meetingContext": "This is a follow-up to Pat's inbound message. The AE has not yet seen Pat's roadmap — the meeting is intent-discovery first. A successful outcome is either (a) commit to a 2-week discovery sprint scoping the eval workflow, or (b) a clean 'we're building this in-house' that lets us walk away.",
+
+  "competitiveContext": ["in-house build (their default)", "Snowflake Professional Services", "Slalom"]
+}

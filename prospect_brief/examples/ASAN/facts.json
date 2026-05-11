@@ -1,0 +1,320 @@
+{
+  "company": "Asana",
+  "ticker": "ASAN",
+  "ae": "J. Chen",
+  "meeting_date": "2026-05-09",
+  "generated_at": "2026-05-08T16:54:19.035495Z",
+  "coverage_window_start": "2024-11-07",
+  "coverage_window_end": "2026-05-07",
+  "sources": [
+    {
+      "id": "ASAN-PR-FY26Q4",
+      "type": "press_release",
+      "url": "https://investors.asana.com/news-releases/news-release-details/asana-announces-fourth-quarter-and-fiscal-year-2026-results",
+      "publisher": "investors.asana.com",
+      "publish_date": "2026-03-02",
+      "title": "Asana Announces Fourth Quarter and Fiscal Year 2026 Results",
+      "accessed_at": "2026-05-07T14:22:00Z",
+      "byline": null
+    },
+    {
+      "id": "ASAN-8K-CEO",
+      "type": "8-K",
+      "url": "https://investors.asana.com/static-files/541d03df-30f1-4447-ac4b-a8d92514d620",
+      "publisher": "investors.asana.com",
+      "publish_date": "2025-06-25",
+      "title": "Form 8-K — Asana CEO Succession",
+      "accessed_at": "2026-05-07T14:22:00Z",
+      "byline": null
+    },
+    {
+      "id": "ASAN-CNBC-CEO",
+      "type": "news_article",
+      "url": "https://www.cnbc.com/2025/06/25/asana-ceo-dan-rogers-replace-dustin-moskovitz.html",
+      "publisher": "cnbc.com",
+      "publish_date": "2025-06-25",
+      "title": "Asana picks Dan Rogers, formerly of ServiceNow, to replace CEO Dustin Moskovitz",
+      "accessed_at": "2026-05-07T14:22:00Z",
+      "byline": "CNBC Staff"
+    },
+    {
+      "id": "ASAN-PR-FY25Q4",
+      "type": "press_release",
+      "url": "https://investors.asana.com/news-releases/news-release-details/asana-announces-fourth-quarter-and-fiscal-year-2025-results",
+      "publisher": "investors.asana.com",
+      "publish_date": "2025-03-11",
+      "title": "Asana Announces Fourth Quarter and Fiscal Year 2025 Results",
+      "accessed_at": "2026-05-07T14:22:00Z",
+      "byline": null
+    },
+    {
+      "id": "ASAN-COMPUTERWORLD-LAYOFFS",
+      "type": "news_article",
+      "url": "https://www.computerworld.com/article/1614969/asana-to-lay-off-9-of-its-workforce-to-improve-operating-costs.html",
+      "publisher": "computerworld.com",
+      "publish_date": "2025-02-06",
+      "title": "Asana to lay off 9% of its workforce to improve operating costs",
+      "accessed_at": "2026-05-07T14:22:00Z",
+      "byline": "Computerworld Staff"
+    },
+    {
+      "id": "ASAN-WARN-FEB25",
+      "type": "regulatory_filing",
+      "url": "https://www.warntracker.com/company/asana",
+      "publisher": "warntracker.com",
+      "publish_date": "2025-02-06",
+      "title": "Asana — WARN notices Nov 2022 to Feb 2025",
+      "accessed_at": "2026-05-07T14:22:00Z",
+      "byline": null
+    },
+    {
+      "id": "ASAN-AISTUDIO-HELP",
+      "type": "company_blog",
+      "url": "https://help.asana.com/s/article/ai-studio-pricing?language=en_US",
+      "publisher": "help.asana.com",
+      "publish_date": "2025-11-01",
+      "title": "AI Studio add-on and pricing",
+      "accessed_at": "2026-05-07T14:22:00Z",
+      "byline": null
+    }
+  ],
+  "facts": [
+    {
+      "fact_kind": "exec_statements",
+      "payload": {
+        "source_id": "ASAN-PR-FY26Q4",
+        "verbatim_quote": "the foundational system of action layer for the Agentic Enterprise",
+        "speaker_name": "Dan Rogers",
+        "speaker_title": "CEO",
+        "forum": "press_release",
+        "statement_date": "2026-03-02",
+        "topic_tags": [
+          "agentic-enterprise",
+          "platform-strategy"
+        ]
+      },
+      "source_ids": [
+        "ASAN-PR-FY26Q4"
+      ],
+      "tier": "confirmed",
+      "stale": false
+    },
+    {
+      "fact_kind": "exec_statements",
+      "payload": {
+        "source_id": "ASAN-PR-FY26Q4",
+        "verbatim_quote": "advanced Asana into a multi-product platform",
+        "speaker_name": "Dan Rogers",
+        "speaker_title": "CEO",
+        "forum": "press_release",
+        "statement_date": "2026-03-02",
+        "topic_tags": [
+          "multi-product",
+          "platform"
+        ]
+      },
+      "source_ids": [
+        "ASAN-PR-FY26Q4"
+      ],
+      "tier": "confirmed",
+      "stale": false
+    },
+    {
+      "fact_kind": "financial_signals",
+      "payload": {
+        "source_id": "ASAN-PR-FY26Q4",
+        "verbatim_quote": "Q4 revenue was $205.6 million, up 9% year over year",
+        "metric": "revenue",
+        "direction": "up",
+        "magnitude_text": "$205.6M, +9% YoY",
+        "period": "Q4 FY26",
+        "as_of_date": "2026-03-02"
+      },
+      "source_ids": [
+        "ASAN-PR-FY26Q4"
+      ],
+      "tier": "confirmed",
+      "stale": false
+    },
+    {
+      "fact_kind": "financial_signals",
+      "payload": {
+        "source_id": "ASAN-PR-FY26Q4",
+        "verbatim_quote": "expanded Q4 GAAP operating margin by over 17 percentage points",
+        "metric": "operating_margin",
+        "direction": "up",
+        "magnitude_text": "+17pp YoY GAAP",
+        "period": "Q4 FY26",
+        "as_of_date": "2026-03-02"
+      },
+      "source_ids": [
+        "ASAN-PR-FY26Q4"
+      ],
+      "tier": "confirmed",
+      "stale": false
+    },
+    {
+      "fact_kind": "financial_signals",
+      "payload": {
+        "source_id": "ASAN-PR-FY26Q4",
+        "verbatim_quote": "adjusted free cash flow by 108% year over year",
+        "metric": "free_cash_flow",
+        "direction": "up",
+        "magnitude_text": "+108% YoY adj FCF",
+        "period": "FY26",
+        "as_of_date": "2026-03-02"
+      },
+      "source_ids": [
+        "ASAN-PR-FY26Q4"
+      ],
+      "tier": "confirmed",
+      "stale": false
+    },
+    {
+      "fact_kind": "financial_signals",
+      "payload": {
+        "source_id": "ASAN-PR-FY26Q4",
+        "verbatim_quote": "dollar-based net retention rate in Q4 was 96%",
+        "metric": "guidance",
+        "direction": "flat",
+        "magnitude_text": "DBNR 96%",
+        "period": "Q4 FY26",
+        "as_of_date": "2026-03-02"
+      },
+      "source_ids": [
+        "ASAN-PR-FY26Q4"
+      ],
+      "tier": "confirmed",
+      "stale": false
+    },
+    {
+      "fact_kind": "customer_or_partnership",
+      "payload": {
+        "source_id": "ASAN-PR-FY26Q4",
+        "verbatim_quote": "customers spending $100,000 or more annually grew to 817",
+        "counterparty": "$100k+ ARR cohort",
+        "type": "customer_win",
+        "announced_date": "2026-03-02"
+      },
+      "source_ids": [
+        "ASAN-PR-FY26Q4"
+      ],
+      "tier": "confirmed",
+      "stale": false
+    },
+    {
+      "fact_kind": "leadership_changes",
+      "payload": {
+        "source_id": "ASAN-8K-CEO",
+        "verbatim_quote": "Mr. Daniel Rogers as the Company's Chief Executive Officer",
+        "person": "Daniel Rogers",
+        "role": "Chief Executive Officer",
+        "change_type": "hired",
+        "effective_date": "2025-07-21"
+      },
+      "source_ids": [
+        "ASAN-8K-CEO",
+        "ASAN-CNBC-CEO"
+      ],
+      "tier": "confirmed",
+      "stale": true
+    },
+    {
+      "fact_kind": "leadership_changes",
+      "payload": {
+        "source_id": "ASAN-8K-CEO",
+        "verbatim_quote": "Mr. Dustin Moskovitz, the current President and Chief Executive",
+        "person": "Dustin Moskovitz",
+        "role": "Chief Executive Officer (outgoing) → Chair / non-employee director",
+        "change_type": "reassigned",
+        "effective_date": "2025-07-21"
+      },
+      "source_ids": [
+        "ASAN-8K-CEO"
+      ],
+      "tier": "confirmed",
+      "stale": true
+    },
+    {
+      "fact_kind": "financial_signals",
+      "payload": {
+        "source_id": "ASAN-PR-FY25Q4",
+        "verbatim_quote": "reaching positive free cash flow for the full fiscal year 2025",
+        "metric": "free_cash_flow",
+        "direction": "up",
+        "magnitude_text": "positive FCF FY25",
+        "period": "FY25",
+        "as_of_date": "2025-03-11"
+      },
+      "source_ids": [
+        "ASAN-PR-FY25Q4"
+      ],
+      "tier": "confirmed",
+      "stale": true
+    },
+    {
+      "fact_kind": "financial_signals",
+      "payload": {
+        "source_id": "ASAN-COMPUTERWORLD-LAYOFFS",
+        "verbatim_quote": "9% of the global team, as part of a restructuring plan",
+        "metric": "layoffs",
+        "direction": "down",
+        "magnitude_text": "~9% of global headcount",
+        "period": "Feb 2025",
+        "as_of_date": "2025-02-06"
+      },
+      "source_ids": [
+        "ASAN-COMPUTERWORLD-LAYOFFS",
+        "ASAN-WARN-FEB25"
+      ],
+      "tier": "confirmed",
+      "stale": false
+    },
+    {
+      "fact_kind": "product_launches",
+      "payload": {
+        "source_id": "ASAN-AISTUDIO-HELP",
+        "verbatim_quote": "AI Studio Plus (paid add-on for individuals and small teams)",
+        "product_name": "AI Studio (tiered pricing: Basic / Plus / Pro)",
+        "launch_date": "2025-11-01",
+        "stated_purpose_quote": "AI Studio Plus (paid add-on for individuals and small teams)"
+      },
+      "source_ids": [
+        "ASAN-AISTUDIO-HELP"
+      ],
+      "tier": "single_signal",
+      "stale": false
+    }
+  ],
+  "gaps": [
+    "No active class-action securities litigation surfaced in coverage window.",
+    "No earnings-call transcript text was hydrated (search adapter returned summary only).",
+    "No public CFO interview surfaced; CFO statement coverage is press-release-only.",
+    "No verified customer-name wins (only aggregate $100k+ cohort growth) — probe in discovery."
+  ],
+  "verifier_log": {
+    "quotes_checked": 17,
+    "quotes_passed": 14,
+    "stripped": [
+      {
+        "reason": "fact_date_out_of_window",
+        "fact_kind": "product_launches",
+        "source_id": "ASAN-PR-FY25Q4",
+        "fact_date": "2024-10-01",
+        "quote": "The early momentum with AI Studio has exceeded expectations"
+      },
+      {
+        "reason": "quote_not_in_source",
+        "fact_kind": "leadership_changes",
+        "source_id": "ASAN-PR-FY26Q4",
+        "quote": "appointed Sundar Pichai as new chair"
+      },
+      {
+        "reason": "quote_not_in_source",
+        "fact_kind": "exec_statements",
+        "source_id": "ASAN-PR-FY26Q4",
+        "quote": "we will acquire Monday.com next quarter"
+      }
+    ]
+  }
+}

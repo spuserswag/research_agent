@@ -1,0 +1,31 @@
+{
+  "company": "Brantley Construction Company",
+  "ticker": null,
+  "domain": "brantleyconstruction.com",
+  "ae": "Account Executive",
+  "meeting_date": "+2",
+  "out_dir": "examples/BRANTLEY",
+  "coverage_days": 540,
+
+  "industry_kinds": ["construction"],
+  "include_linkedin": true,
+  "include_federal": true,
+  "strategist": true,
+  "audience": "ceo",
+
+  "disambiguators": ["charleston", "south carolina", "sc"],
+
+  "aliases": [
+    "Brantley Construction Services LLC",
+    "Brantley Construction Services",
+    "BCC"
+  ],
+
+  "seed_urls": [
+    "https://brantleyconstruction.com/about/",
+    "https://brantleyconstruction.com/news",
+    "https://www.linkedin.com/company/brantley-construction-company",
+    "https://www.buildzoom.com/contractor/brantley-construction-company",
+    "https://opencorporates.com/companies?q=brantley+construction&jurisdiction_code=us_sc"
+  ]
+}

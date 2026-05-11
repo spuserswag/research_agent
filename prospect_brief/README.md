@@ -1,0 +1,91 @@
+# prospect_brief
+
+A discovery-call brief generator for account executives that prioritizes **grounded, citable facts** over LLM synthesis. Designed to be hard to hallucinate with.
+
+## What's different from a typical "AE prep agent"
+
+Most prep agents ask one model to read the web and write a brief. They produce confident, paraphrased prose that's hard to verify and frequently wrong. This pipeline is structured to make that failure mode mechanically harder:
+
+1. **Two-stage pipeline.** A structured extractor reads each source and fills a typed Pydantic schema with verbatim quotes (≤ 15 words) and source IDs. The writer is only allowed to render claims that already exist in that schema. Free-form synthesis is removed from the writing step.
+2. **Verifier pass.** After extraction, every claim's quote is checked against the actual source text by substring match. Quotes that don't match are stripped before the brief is rendered.
+3. **Confidence tiers.** Each claim is tagged `confirmed` (primary source + direct quote), `corroborated` (≥2 independent sources), `single_signal`, or `inferred`. `inferred` is dropped by default.
+4. **Source allowlist for Red Flags.** The Red Flags section can only cite SEC filings, court filings, regulatory filings, official press releases, or named-byline reporting from major outlets. If nothing meets the bar, the section says so explicitly.
+5. **Recency gates.** News older than 90 days, JDs older than 30 days, and interviews older than 12 months are tagged `[stale]`. Configurable in `config.py`.
+6. **Negative space.** A `gaps` section in the brief lists what was searched for and not found, so AEs know where to probe.
+7. **Auditable evidence packet.** Every brief ships with the full source list, the raw JSON facts dump, and the verifier log.
+
+## Pipeline shape
+
+```
+config + company  ─►  source_discovery  ─►  fetch  ─►  extract (LLM, structured)
+                                                          │
+                                                          ▼
+                                                       verifier  ─►  render  ─►  brief.md + facts.json + sources.md
+```
+
+## Layout
+
+```
+prospect_brief/
+├── cli.py                   entry point: `python cli.py --company "Asana" --ticker ASAN`
+├── pipeline/
+│   ├── schema.py            Pydantic models (Source, Fact, Brief, etc.)
+│   ├── config.py            recency windows, source allowlists, model names
+│   ├── sources.py           source discovery (SEC EDGAR, web search, careers pages)
+│   ├── fetch.py             httpx + trafilatura content extraction
+│   ├── extract.py           LLM-driven structured extraction per source
+│   ├── verify.py            substring-checks every quote against source text
+│   ├── render.py            renders the verified schema into the brief markdown
+│   └── pipeline.py          orchestration
+├── prompts/
+│   ├── extractor.md         system prompt for the extractor stage
+│   ├── verifier_writer.md   guardrail prompt for the writer stage
+│   └── red_flags.md         constrained prompt with source-type allowlist
+└── examples/
+    └── ASAN/
+        ├── brief.md         the rendered brief
+        ├── facts.json       full structured schema (audit trail)
+        └── sources.md       evidence packet
+```
+
+## Setup
+
+```bash
+pip install -r requirements.txt
+```
+
+API keys are loaded from a `.env` file in the project root or any parent directory (via `python-dotenv`). Real env vars take precedence. Minimum:
+
+```ini
+# .env
+OPENAI_API_KEY=sk-...
+TAVILY_API_KEY=tvly-...     # optional but strongly recommended (free 1000/mo)
+# OPENAI_BASE_URL=https://your-proxy.example.com/v1   # optional, e.g. proxy or Azure
+```
+
+Web search prefers **Tavily** when `TAVILY_API_KEY` is set (sign up at tavily.com — free tier covers 1,000 queries/month, plenty for personal/team use), and falls back to **DuckDuckGo** via the `ddgs` library when it isn't. SEC EDGAR and the company's own newsroom/careers pages are fetched directly without any key.
+
+## Caching
+
+Successful fetches and extractions are cached to disk under `.cache/` so re-runs on the same prospect are nearly free. Default TTL is 7 days for fetches and 30 days for extractions. Use `--no-cache` to bypass cache reads (writes still happen) or `--clear-cache` to wipe everything before running. The extraction cache key includes the prompt version, so editing `prompts/extractor.md` invalidates the affected entries automatically.
+
+The default extractor model is `gpt-4o-mini` (cheap, fast). The verifier substring-checks every quote regardless of which model produced it, so model quality affects recall (how many real facts get found) more than precision (whether claims in the brief are real).
+
+## Run
+
+```bash
+python cli.py --company "Asana" --ticker ASAN \
+              --ae "J. Chen" --meeting-date 2026-05-09 \
+              --out examples/ASAN/
+```
+
+## What the brief looks like
+
+See `examples/ASAN/brief.md` — a real brief generated by running this pipeline on Asana, with every quote verified against its source.
+
+## Known limits and where to extend
+
+- **Pricing/financial detail** that isn't quoted in a primary source is intentionally omitted. The pipeline will not infer ARR or growth rates that weren't stated.
+- **Motivation attribution** ("the CFO is worried about…") is forbidden by prompt and stripped by the verifier. Only public statements are quoted.
+- **Search quality** is the biggest determinant of brief quality. Add domain-specific search adapters in `sources.py` for industries you cover heavily (e.g., FDA approvals for pharma, CPUC filings for utilities).
+- **Caching**: fetches and extractions are cached under `.cache/` (TTL: 7 days for fetches, 30 days for extractions). Use `--no-cache` to bypass reads or `--clear-cache` to wipe. See the Caching section above for details.

@@ -1,0 +1,26 @@
+{
+  "company": "Egnyte",
+  "website": "https://www.egnyte.com",
+  "prospectName": "",
+  "prospectTitle": "Head of Product",
+  "aeName": "Spenser",
+  "aeEmail": "spenserchun@arvayaconsulting.com",
+  "meetingAt": "2026-05-21T15:00:00Z",
+  "dealStage": "warm",
+  "prospectArchetype": "aec_vendor",
+  "excludeKeywords": [],
+
+  "productFocus": "AI consulting and implementation",
+  "engagementShape": "fixed-scope discovery sprint (2 weeks), with optional implementation phase",
+  "meetingType": "first_intro",
+  "introSource": "event",
+  "introContext": "Met an Egnyte product manager at the AECTech 2026 booth. PM volunteered that Egnyte AI's structured-data extraction roadmap is bottlenecked on ML headcount, asked for a follow-up call.",
+
+  "callObjective": "Validate that Egnyte AI's gap on structured-data-from-drawings is real and severe enough to justify a 2-week discovery sprint with Arvaya. Walk away with either a sprint proposal sent or a clear no-go.",
+
+  "hypothesis": "Egnyte AI does file-level retrieval well over AEC content, but does not yet extract structured data from drawings (sheet numbers, RFI counts, schedule line items, spec callouts). Their AEC customers are asking for it. Their applied-ML org is thin so the build-vs-partner question is live.",
+
+  "meetingContext": "First conversation since the AECTech booth. The AE pitched a fixed-scope discovery sprint and the PM asked for the follow-up. Goal: find one concrete pain in Egnyte's AI roadmap that Arvaya can credibly accelerate, then propose a sprint to scope it.",
+
+  "competitiveContext": ["Slalom (general AI consulting)", "Accenture AI&Analytics", "in-house build (their default)"]
+}
