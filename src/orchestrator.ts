@@ -203,6 +203,7 @@ export async function runOrchestrator(leadIn: Lead): Promise<OrchestratorResult>
     const { result: verified, usage: verifierUsage } = await runQaVerifier({
       draft,
       sourcePack,
+      risks,
     });
     record.verified = verified;
     await writeJson(path.join(researchDir, "verified-brief.json"), verified);
@@ -229,11 +230,13 @@ export async function runOrchestrator(leadIn: Lead): Promise<OrchestratorResult>
       ledger: getLedgerEntries(),
     };
 
-    // Render the brief.
+    // Render the brief (both markdown for humans and JSON for clients).
     progressStart(4);
-    const rendered = renderBrief(lead, verified, sourcePack);
+    const rendered = renderBrief(lead, verified, sourcePack, risks);
     const briefPath = path.join(profilePath, "brief.md");
+    const briefJsonPath = path.join(profilePath, "brief.json");
     await writeFile(briefPath, rendered.markdown, "utf8");
+    await writeJson(briefJsonPath, rendered.published);
     record.finishedAt = new Date().toISOString();
     await writeJson(path.join(profilePath, "run.json"), record);
     progressDone(4);

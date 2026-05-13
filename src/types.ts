@@ -117,6 +117,17 @@ export const LeadSchema = z.object({
     .optional(),
 
   /**
+   * Persona of the primary attendee on the prospect side. Tunes the
+   * PersonalizationWriter's talking-point register (CTO meeting →
+   * tech-stack and processing-tax questions; CFO meeting → margin and
+   * capex; etc.). When absent, the writer infers from `prospectTitle`
+   * or defaults to a generic CEO frame.
+   */
+  audience: z
+    .enum(["ceo", "cto", "cfo", "coo", "cro", "generic"])
+    .optional(),
+
+  /**
    * What Arvaya is actually selling here. Tunes valueAlignmentHooks.
    * Free-form because Arvaya's offering shape varies. Examples:
    * "advisory retainer", "fixed-scope discovery sprint",
@@ -368,6 +379,81 @@ export const VerifiedBriefSchema = z.object({
   passedVerification: z.boolean(),
 });
 export type VerifiedBrief = z.infer<typeof VerifiedBriefSchema>;
+
+// ---------- PublishedBrief: the canonical JSON contract for clients ----------
+
+/**
+ * `PublishedBrief` is the language-neutral, frontend-friendly JSON shape
+ * that downstream consumers (the conference-copilot, future SDK clients,
+ * any third-party integration) ingest. It is a flattened, presentation-
+ * ready projection of (Lead + DraftBrief + Risks + verifier notes +
+ * referenced SourcePack sources).
+ *
+ * Stability contract: this schema may grow (new optional fields), but
+ * existing field names + types are frozen — version it in `meta.schemaVersion`
+ * if you need a breaking change.
+ *
+ * The compileBrief() function in src/lib/briefRenderer.ts builds this
+ * from the orchestrator's outputs. brief.json next to brief.md per run.
+ */
+
+export const PublishedBriefSchema = z.object({
+  meta: z.object({
+    /** Bump when this schema's field names or types change in a breaking way. */
+    schemaVersion: z.literal(1),
+    company: z.string(),
+    ticker: z.string().optional(),
+    ae: z.string(),
+    meetingDate: z.string().optional(), // ISO 8601 if known
+    generatedAt: z.string(),            // ISO 8601 of compilation
+    runId: z.string(),
+    audience: z
+      .enum(["ceo", "cto", "cfo", "coo", "cro", "generic"])
+      .optional(),
+    /** Overall signal quality bucket — drives frontend list-view triage. */
+    signalQuality: z.enum(["rich", "moderate", "thin", "low"]),
+    /** Did the brief pass the LLM + deterministic verifier? */
+    passedVerification: z.boolean(),
+    /** Optional banner string the renderer adds when confidence is thin. */
+    confidenceBanner: z.string().optional(),
+  }),
+
+  // Sections directly from DraftBrief (no shape change — flat fields).
+  executiveSnapshot: z.array(SnapshotItemSchema),
+  tldr: z.array(z.string()),
+  callObjective: z.string(),
+  icebreakers: z.array(BriefItemSchema),
+  valueAlignmentHooks: z.array(BriefItemSchema),
+  talkingPoints: z.array(BriefItemSchema),
+  potentialRedFlags: z.array(BriefItemSchema),
+  attendeeIntel: z.array(AttendeeIntelSchema),
+  objectionPredictions: z.array(
+    z.object({
+      objection: z.string(),
+      suggestedResponse: z.string(),
+      supportingSourceIds: z.array(z.string()),
+    }),
+  ),
+  govContracts: z.array(GovContractSchema),
+  prepNotes: z.array(BriefItemSchema),
+
+  // Risks come from a separate agent in the TS pipeline.
+  risks: z.array(RiskSchema),
+
+  // Verifier metadata — surfaces strip counts to the frontend so it can
+  // render a "X claims stripped" badge.
+  verifier: z.object({
+    notes: z.array(VerificationNoteSchema),
+    stripped: z.number().int(),
+    checked: z.number().int(),
+  }),
+
+  // Only sources actually cited somewhere in the brief — the frontend
+  // doesn't need the full SourcePack, just what's referenced.
+  sources: z.array(SourceSchema),
+});
+
+export type PublishedBrief = z.infer<typeof PublishedBriefSchema>;
 
 // ---------- Pipeline-level usage / cost telemetry ----------
 

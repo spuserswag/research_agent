@@ -236,6 +236,64 @@ Only include items that have source support. If no AEC-specific signals exist in
 
 ---
 
+# Audience-aware talking points
+
+When `lead.audience` is set (or when `lead.prospectTitle` strongly implies a persona), bias `talkingPoints` toward that persona's concerns rather than generic CEO/strategy framing. Use the bank below as a starting point — pick 2-3 and adapt them to the verified facts you have. Each adapted talking point still needs `supportingSourceIds`.
+
+**`audience: "ceo"` (or generic):**
+- "How is the business performing this year vs last? (Revenue trajectory, margin pressure, capex plans.)"
+- "What are the top 2-3 priorities leadership has named for the next 12 months? Listen for their language."
+- "Who are their largest 2-3 customers, and what's the renewal / expansion picture there?"
+
+**`audience: "cfo"`:**
+- "Revenue trajectory and margin profile vs last year — and any near-term pressures on either?"
+- "How is capex allocated across infrastructure, headcount, and tooling?"
+- "Customer concentration — what % of revenue is the top 5?"
+- "Working-capital posture: are receivables / collections an issue?"
+
+**`audience: "cto"`:**
+- "What's the current technology stack and which pieces of it are they actively trying to replace or upgrade?"
+- "Where is engineering capacity most constrained right now? Build vs buy decisions on the table?"
+- "How do they handle the data-gravity / processing-tax problem at their current operational scale?"
+- "What integration / interoperability headaches are eating cycles? (Standards mismatches, vendor lock-in, custom glue.)"
+- "Security & compliance posture — anything regulatory shaping the 12-month roadmap (CMMC, SOC2, HIPAA, FedRAMP)?"
+
+**`audience: "coo"`:**
+- "Throughput and capacity — what's the gating constraint right now? Headcount, tools, suppliers, or process?"
+- "Where in the operational workflow are they spending the most person-hours that should be automated?"
+- "Peak-vs-trough demand variance — how do they staff/equip for it?"
+- "Quality / rework rate — any pattern of where errors cluster?"
+
+**`audience: "cro"`:**
+- "Pipeline health — coverage ratio vs target, average sales cycle, win rate by segment?"
+- "Largest deal in pipeline right now and what's standing in its way?"
+- "Customer expansion — what % of revenue is from existing accounts?"
+
+---
+
+# Industry revenue-per-employee (RPE) benchmarks
+
+When the SourcePack confirms approximate headcount but NOT revenue (typical for private prospects), you may model a revenue range using the mid-market US bands below. Show the math in `executiveSnapshot.text` — e.g. *"~30 employees × $400K–$700K RPE for small commercial GC = $12M–$21M est. annual."* Always cite the headcount source. Never produce a point estimate; always a band. If the prospect's segment isn't in the table, omit the revenue snapshot rather than guess.
+
+| Industry / segment                          | RPE range (USD)  | Notes                                         |
+|---------------------------------------------|------------------|-----------------------------------------------|
+| Commercial GC, small (<50 emp)              | $400K–$700K      | Federal contractors skew +20-30% vs. private  |
+| Commercial GC, mid ($10M–$100M revenue)     | $500K–$900K      | ENR Top 400 median ~$680K                     |
+| Commercial GC, large (>$100M)               | $700K–$1.2M      |                                               |
+| Specialty/sub-contractor (electrical, HVAC) | $300K–$550K      |                                               |
+| Architecture / engineering services         | $200K–$400K      | Pure-play A&E firms                           |
+| Professional services / consulting          | $250K–$450K      | Tier-1 strategy: $500K–$1M                    |
+| Law / accounting (mid-size)                 | $350K–$650K      |                                               |
+| Software / SaaS, growth stage               | $250K–$500K      |                                               |
+| Software / SaaS, mature public              | $400K–$1.2M      | Top quartile $700K+                           |
+| Manufacturing, industrial                   | $350K–$700K      | Heavy-asset → lower RPE                       |
+| Healthcare services (clinics, mid-size)     | $150K–$300K      | Labor-intensive                               |
+| Retail / e-commerce                         | $150K–$350K      |                                               |
+| Logistics / 3PL                             | $250K–$450K      |                                               |
+| Hospitality / food service                  | $80K–$180K       |                                               |
+
+---
+
 # Output
 
 Reply with **only** a JSON object, no prose, no code fence:

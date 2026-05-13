@@ -149,6 +149,14 @@ Be evenhanded — surface contradicting evidence as readily as confirming eviden
 Research <anchor>. How is this company positioned, partnered, or competing against <competitor list joined by " OR ">? Look for direct comparisons, joint customer wins/losses, integration partnerships, or analyst commentary.
 ```
 
+**Call 5 — Adversarial / pessimistic signal** (always run for `aec_firm`; run for `aec_vendor` only when Phase 0 Apollo did not already surface obvious risk):
+
+```
+Research <anchor>. Are there any active lawsuits, mechanics liens, OSHA citations, safety violations, regulatory fines, or named complaints filed against this company in the last 18 months? Surface any disputes, payment-term issues with subcontractors or vendors, or named litigation.
+```
+
+This is intentionally an adversarial query. It catches the risks the standard breadth scan misses because the standard query is implicitly positive ("announcements, achievements"). The relevance gate and the Verifier will still drop sources that don't actually name the prospect, so this query won't flood the SourcePack with noise — it just gives the Risk Detector a fighting chance to find real adverse-signal content if any exists.
+
 **After each breadth call, score the angles for deep-research value:**
 
 | Angle | Apollo covered it? | Perplexity has signal? | Worth deep-diving? |

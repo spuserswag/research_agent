@@ -1,0 +1,865 @@
+{
+  "company": "Brantley Construction Company",
+  "ticker": null,
+  "ae": "Account Executive",
+  "meeting_date": "2026-05-09",
+  "generated_at": "2026-05-08T05:13:06.752691Z",
+  "coverage_window_start": "2024-11-13",
+  "coverage_window_end": "2026-05-07",
+  "sources": [
+    {
+      "id": "NEWSROOM:brantleyconstruction.com",
+      "type": "press_release",
+      "url": "https://brantleyconstruction.com/news",
+      "publisher": "brantleyconstruction.com",
+      "publish_date": null,
+      "title": "brantleyconstruction.com newsroom index",
+      "accessed_at": "2026-05-08T05:12:43.862118Z",
+      "byline": null
+    },
+    {
+      "id": "IND:dac5b95eb8",
+      "type": "industry_database",
+      "url": "https://www.buildzoom.com/contractor/brantley-construction-company",
+      "publisher": "www.buildzoom.com",
+      "publish_date": null,
+      "title": "Brantley Construction Company | SC | Get a Bid | BuildZoom",
+      "accessed_at": "2026-05-08T05:12:46.830146Z",
+      "byline": null
+    },
+    {
+      "id": "IND:15e1740bc4",
+      "type": "industry_database",
+      "url": "https://www.buildzoom.com/contractor/brantley-construction-company-llc",
+      "publisher": "www.buildzoom.com",
+      "publish_date": null,
+      "title": "Brantley Construction Company | Stratford CT | Get a Bid | BuildZoom",
+      "accessed_at": "2026-05-08T05:12:46.830253Z",
+      "byline": null
+    },
+    {
+      "id": "IND:ae6a3f0da5",
+      "type": "industry_database",
+      "url": "https://procurement.sc.gov/files/cpo/Brantley__PRT.pdf",
+      "publisher": "procurement.sc.gov",
+      "publish_date": null,
+      "title": "[PDF] BID PROTEST ) BRANTLY CONSTRUCTION COMPANY, LLC ...",
+      "accessed_at": "2026-05-08T05:12:49.193587Z",
+      "byline": null
+    },
+    {
+      "id": "IND:e04ad328a4",
+      "type": "industry_database",
+      "url": "https://www.procurement.sc.gov/files/cpo/Lower_State_-_VR.pdf",
+      "publisher": "www.procurement.sc.gov",
+      "publish_date": null,
+      "title": "[PDF] BID PROTEST ) LOWER STATE CONSTRUCTION SERVICES, LLC ...",
+      "accessed_at": "2026-05-08T05:12:49.193665Z",
+      "byline": null
+    },
+    {
+      "id": "IND:46adbb8e15",
+      "type": "industry_database",
+      "url": "https://www.osha.gov/ords/imis/industry.search?sic=1542&naics=&state=All&officetype=&office=All&startmonth=01&startday=01&startyear=2000&endmonth=12&endday=31&endyear=2000&scope=&fedagncode=&owner=&p_start=&p_finish=2780&p_sort=reporting_id&p_desc=ASC&p_direction=Next&p_show=20",
+      "publisher": "www.osha.gov",
+      "publish_date": null,
+      "title": "Industry Search Results Page | Occupational Safety and Health Administration osha.gov",
+      "accessed_at": "2026-05-08T05:12:57.654964Z",
+      "byline": null
+    },
+    {
+      "id": "LI:de42c2b8f6",
+      "type": "linkedin_profile",
+      "url": "https://www.linkedin.com/in/garydbrantley",
+      "publisher": "www.linkedin.com",
+      "publish_date": null,
+      "title": "Gary D Brantley, PE - Brantley Construction Company, LLC",
+      "accessed_at": "2026-05-08T05:12:58.023279Z",
+      "byline": null
+    },
+    {
+      "id": "LI:b382f9b635",
+      "type": "linkedin_profile",
+      "url": "https://www.linkedin.com/in/matthew-brantley-ba8889178",
+      "publisher": "www.linkedin.com",
+      "publish_date": null,
+      "title": "Matthew Brantley - Brantley Construction Company",
+      "accessed_at": "2026-05-08T05:12:58.023357Z",
+      "byline": null
+    },
+    {
+      "id": "LI:58ada33a52",
+      "type": "linkedin_profile",
+      "url": "https://www.linkedin.com/in/louis-white-254b48125",
+      "publisher": "www.linkedin.com",
+      "publish_date": null,
+      "title": "Louis White - Project Manager at Brantley Construction Company",
+      "accessed_at": "2026-05-08T05:12:58.023374Z",
+      "byline": null
+    },
+    {
+      "id": "LI:1703f0fc3e",
+      "type": "linkedin_profile",
+      "url": "https://www.linkedin.com/in/chad-patterson-036361171",
+      "publisher": "www.linkedin.com",
+      "publish_date": null,
+      "title": "Chad Patterson - Brantley Construction Company",
+      "accessed_at": "2026-05-08T05:12:58.023387Z",
+      "byline": null
+    },
+    {
+      "id": "LI:a647dc14e3",
+      "type": "linkedin_profile",
+      "url": "https://www.linkedin.com/in/sid-brantley-392757b0",
+      "publisher": "www.linkedin.com",
+      "publish_date": null,
+      "title": "Sid Brantley - Brantley Construction Company - LinkedIn",
+      "accessed_at": "2026-05-08T05:12:58.397219Z",
+      "byline": null
+    },
+    {
+      "id": "LI:bb77ad7800",
+      "type": "linkedin_profile",
+      "url": "https://www.linkedin.com/in/rob-brantley-0498198b",
+      "publisher": "www.linkedin.com",
+      "publish_date": null,
+      "title": "Rob Brantley - Brantley Construction Company | LinkedIn",
+      "accessed_at": "2026-05-08T05:12:58.397302Z",
+      "byline": null
+    },
+    {
+      "id": "LI:ab681f0483",
+      "type": "linkedin_profile",
+      "url": "https://www.linkedin.com/in/dan-brantley-6ba95b25",
+      "publisher": "www.linkedin.com",
+      "publish_date": null,
+      "title": "Dan Brantley - Brantley Construction and Landscaping - LinkedIn",
+      "accessed_at": "2026-05-08T05:12:58.397323Z",
+      "byline": null
+    },
+    {
+      "id": "LI:9dc398f442",
+      "type": "linkedin_profile",
+      "url": "https://www.linkedin.com/in/christina-mcalhaney-98543216",
+      "publisher": "www.linkedin.com",
+      "publish_date": null,
+      "title": "Christina McAlhaney - -- - Brantley Construction Company",
+      "accessed_at": "2026-05-08T05:12:58.754740Z",
+      "byline": null
+    },
+    {
+      "id": "LI:906e58b6bd",
+      "type": "linkedin_profile",
+      "url": "https://www.linkedin.com/in/stanley-martin-a20b48172",
+      "publisher": "www.linkedin.com",
+      "publish_date": null,
+      "title": "Stanley Martin - Superintendent at Brantley Construction Company",
+      "accessed_at": "2026-05-08T05:12:58.754831Z",
+      "byline": null
+    },
+    {
+      "id": "USASPEND:968bca9747",
+      "type": "regulatory_filing",
+      "url": "https://www.usaspending.gov/search/?keywords=Brantley Construction Company",
+      "publisher": "usaspending.gov",
+      "publish_date": null,
+      "title": "USAspending federal contracts: BRANTLEY CONSTRUCTION SERVICES, LLC",
+      "accessed_at": "2026-05-08T05:13:00.545268Z",
+      "byline": null
+    },
+    {
+      "id": "SEED:2b04496c84",
+      "type": "user_seeded",
+      "url": "https://brantleyconstruction.com/about/",
+      "publisher": "brantleyconstruction.com",
+      "publish_date": null,
+      "title": "User-seeded: https://brantleyconstruction.com/about/",
+      "accessed_at": "2026-05-08T05:13:00.545480Z",
+      "byline": null
+    },
+    {
+      "id": "SEED:d3d4780d7f",
+      "type": "user_seeded",
+      "url": "https://brantleyconstruction.com/news",
+      "publisher": "brantleyconstruction.com",
+      "publish_date": null,
+      "title": "User-seeded: https://brantleyconstruction.com/news",
+      "accessed_at": "2026-05-08T05:13:00.545530Z",
+      "byline": null
+    },
+    {
+      "id": "SEED:6448a3f73c",
+      "type": "linkedin_profile",
+      "url": "https://www.linkedin.com/company/brantley-construction-company",
+      "publisher": "linkedin.com",
+      "publish_date": null,
+      "title": "User-seeded: https://www.linkedin.com/company/brantley-construction-company",
+      "accessed_at": "2026-05-08T05:13:00.545603Z",
+      "byline": null
+    },
+    {
+      "id": "SEED:dac5b95eb8",
+      "type": "industry_database",
+      "url": "https://www.buildzoom.com/contractor/brantley-construction-company",
+      "publisher": "buildzoom.com",
+      "publish_date": null,
+      "title": "User-seeded: https://www.buildzoom.com/contractor/brantley-construction-company",
+      "accessed_at": "2026-05-08T05:13:00.545640Z",
+      "byline": null
+    },
+    {
+      "id": "SEED:1b40a4a120",
+      "type": "user_seeded",
+      "url": "https://opencorporates.com/companies?q=brantley+construction&jurisdiction_code=us_sc",
+      "publisher": "opencorporates.com",
+      "publish_date": null,
+      "title": "User-seeded: https://opencorporates.com/companies?q=brantley+construction&jurisdiction_code=us_sc",
+      "accessed_at": "2026-05-08T05:13:00.545675Z",
+      "byline": null
+    }
+  ],
+  "facts": [
+    {
+      "fact_kind": "leadership_changes",
+      "payload": {
+        "source_id": "NEWSROOM:brantleyconstruction.com",
+        "verbatim_quote": "Christina McAlhaney, our Chief Estimator",
+        "person": "Christina McAlhaney",
+        "role": "Chief Estimator",
+        "change_type": "hired",
+        "effective_date": null
+      },
+      "source_ids": [
+        "NEWSROOM:brantleyconstruction.com",
+        "SEED:d3d4780d7f"
+      ],
+      "tier": "confirmed",
+      "stale": false
+    },
+    {
+      "fact_kind": "company_profile",
+      "payload": {
+        "source_id": "NEWSROOM:brantleyconstruction.com",
+        "verbatim_quote": "one of the most reputable commercial general contractors in the Southeast",
+        "attribute": "specialties",
+        "value": "commercial general contractor, Southeast"
+      },
+      "source_ids": [
+        "NEWSROOM:brantleyconstruction.com",
+        "SEED:d3d4780d7f"
+      ],
+      "tier": "confirmed",
+      "stale": false
+    },
+    {
+      "fact_kind": "company_profile",
+      "payload": {
+        "source_id": "NEWSROOM:brantleyconstruction.com",
+        "verbatim_quote": "Charleston, South Carolina, USA",
+        "attribute": "headquarters",
+        "value": "Charleston, SC"
+      },
+      "source_ids": [
+        "NEWSROOM:brantleyconstruction.com",
+        "IND:dac5b95eb8",
+        "LI:de42c2b8f6",
+        "LI:58ada33a52",
+        "SEED:2b04496c84",
+        "SEED:d3d4780d7f",
+        "SEED:6448a3f73c",
+        "SEED:dac5b95eb8"
+      ],
+      "tier": "confirmed",
+      "stale": false
+    },
+    {
+      "fact_kind": "company_profile",
+      "payload": {
+        "source_id": "IND:dac5b95eb8",
+        "verbatim_quote": "founded in 1976",
+        "attribute": "founded_year",
+        "value": "1976"
+      },
+      "source_ids": [
+        "IND:dac5b95eb8",
+        "SEED:6448a3f73c",
+        "SEED:dac5b95eb8"
+      ],
+      "tier": "corroborated",
+      "stale": false
+    },
+    {
+      "fact_kind": "company_profile",
+      "payload": {
+        "source_id": "IND:dac5b95eb8",
+        "verbatim_quote": "a Canton (Asheville), NC office",
+        "attribute": "office_locations",
+        "value": "Asheville, NC"
+      },
+      "source_ids": [
+        "IND:dac5b95eb8",
+        "SEED:2b04496c84",
+        "SEED:dac5b95eb8"
+      ],
+      "tier": "corroborated",
+      "stale": false
+    },
+    {
+      "fact_kind": "company_profile",
+      "payload": {
+        "source_id": "IND:dac5b95eb8",
+        "verbatim_quote": "commercial general contractors in the tri-county",
+        "attribute": "services_offered",
+        "value": "commercial general contractor"
+      },
+      "source_ids": [
+        "IND:dac5b95eb8",
+        "SEED:dac5b95eb8"
+      ],
+      "tier": "single_signal",
+      "stale": false
+    },
+    {
+      "fact_kind": "company_profile",
+      "payload": {
+        "source_id": "IND:dac5b95eb8",
+        "verbatim_quote": "LEED-certified projects",
+        "attribute": "specialties",
+        "value": "LEED-certified"
+      },
+      "source_ids": [
+        "IND:dac5b95eb8",
+        "SEED:dac5b95eb8"
+      ],
+      "tier": "single_signal",
+      "stale": false
+    },
+    {
+      "fact_kind": "company_profile",
+      "payload": {
+        "source_id": "IND:15e1740bc4",
+        "verbatim_quote": "195 GLENN DR, Stratford, CT, 06497",
+        "attribute": "headquarters",
+        "value": "Stratford, CT"
+      },
+      "source_ids": [
+        "IND:15e1740bc4"
+      ],
+      "tier": "single_signal",
+      "stale": false
+    },
+    {
+      "fact_kind": "company_profile",
+      "payload": {
+        "source_id": "IND:15e1740bc4",
+        "verbatim_quote": "Home Improvement Contractor license according to the Connecticut license board",
+        "attribute": "services_offered",
+        "value": "Home Improvement Contractor"
+      },
+      "source_ids": [
+        "IND:15e1740bc4"
+      ],
+      "tier": "single_signal",
+      "stale": false
+    },
+    {
+      "fact_kind": "company_profile",
+      "payload": {
+        "source_id": "IND:ae6a3f0da5",
+        "verbatim_quote": "Brantley Construction Company, LLC is a trade name of Brantley Construction Services, LLC",
+        "attribute": "ownership_structure",
+        "value": "trade name of Brantley Construction Services, LLC"
+      },
+      "source_ids": [
+        "IND:ae6a3f0da5"
+      ],
+      "tier": "single_signal",
+      "stale": false
+    },
+    {
+      "fact_kind": "leadership_changes",
+      "payload": {
+        "source_id": "IND:e04ad328a4",
+        "verbatim_quote": "represented by its owner Kenneth Bryant",
+        "person": "Kenneth Bryant",
+        "role": "Owner",
+        "change_type": "hired",
+        "effective_date": null
+      },
+      "source_ids": [
+        "IND:e04ad328a4"
+      ],
+      "tier": "single_signal",
+      "stale": false
+    },
+    {
+      "fact_kind": "company_profile",
+      "payload": {
+        "source_id": "IND:e04ad328a4",
+        "verbatim_quote": "General Contractor",
+        "attribute": "services_offered",
+        "value": "General Contractor"
+      },
+      "source_ids": [
+        "IND:e04ad328a4"
+      ],
+      "tier": "single_signal",
+      "stale": false
+    },
+    {
+      "fact_kind": "leadership_changes",
+      "payload": {
+        "source_id": "LI:de42c2b8f6",
+        "verbatim_quote": "Gary D Brantley, PE - Brantley Construction Company, LLC",
+        "person": "Gary D Brantley",
+        "role": "PE",
+        "change_type": "hired",
+        "effective_date": null
+      },
+      "source_ids": [
+        "LI:de42c2b8f6"
+      ],
+      "tier": "single_signal",
+      "stale": false
+    },
+    {
+      "fact_kind": "hiring_signals",
+      "payload": {
+        "source_id": "LI:b382f9b635",
+        "verbatim_quote": "We need you in our Charleston office",
+        "function": "ops",
+        "role_count": 1,
+        "window_days": null,
+        "notable_titles": [],
+        "tech_keywords": [],
+        "as_of_date": null
+      },
+      "source_ids": [
+        "LI:b382f9b635"
+      ],
+      "tier": "single_signal",
+      "stale": false
+    },
+    {
+      "fact_kind": "company_profile",
+      "payload": {
+        "source_id": "LI:b382f9b635",
+        "verbatim_quote": "Summerville, South Carolina, United States, US",
+        "attribute": "headquarters",
+        "value": "Summerville, SC"
+      },
+      "source_ids": [
+        "LI:b382f9b635"
+      ],
+      "tier": "single_signal",
+      "stale": false
+    },
+    {
+      "fact_kind": "leadership_changes",
+      "payload": {
+        "source_id": "LI:58ada33a52",
+        "verbatim_quote": "Louis White - Project Manager at Brantley Construction Company",
+        "person": "Louis White",
+        "role": "Project Manager",
+        "change_type": "hired",
+        "effective_date": null
+      },
+      "source_ids": [
+        "LI:58ada33a52"
+      ],
+      "tier": "single_signal",
+      "stale": false
+    },
+    {
+      "fact_kind": "company_profile",
+      "payload": {
+        "source_id": "LI:ab681f0483",
+        "verbatim_quote": "Mount Holly, North Carolina, United States, US",
+        "attribute": "headquarters",
+        "value": "Mount Holly, NC"
+      },
+      "source_ids": [
+        "LI:ab681f0483"
+      ],
+      "tier": "single_signal",
+      "stale": false
+    },
+    {
+      "fact_kind": "company_profile",
+      "payload": {
+        "source_id": "LI:ab681f0483",
+        "verbatim_quote": "1965 - 1971",
+        "attribute": "founded_year",
+        "value": "1965"
+      },
+      "source_ids": [
+        "LI:ab681f0483"
+      ],
+      "tier": "single_signal",
+      "stale": false
+    },
+    {
+      "fact_kind": "leadership_changes",
+      "payload": {
+        "source_id": "LI:906e58b6bd",
+        "verbatim_quote": "Stanley Martin - Superintendent at Brantley Construction Company",
+        "person": "Stanley Martin",
+        "role": "Superintendent",
+        "change_type": "hired",
+        "effective_date": null
+      },
+      "source_ids": [
+        "LI:906e58b6bd"
+      ],
+      "tier": "single_signal",
+      "stale": false
+    },
+    {
+      "fact_kind": "company_profile",
+      "payload": {
+        "source_id": "LI:906e58b6bd",
+        "verbatim_quote": "Athens, Georgia, United States, US",
+        "attribute": "headquarters",
+        "value": "Athens, Georgia, United States"
+      },
+      "source_ids": [
+        "LI:906e58b6bd"
+      ],
+      "tier": "single_signal",
+      "stale": false
+    },
+    {
+      "fact_kind": "company_profile",
+      "payload": {
+        "source_id": "USASPEND:968bca9747",
+        "verbatim_quote": "Top 8 federal contracts (since 2020) total $101,608,191",
+        "attribute": "annual_revenue_range",
+        "value": "$101.6M federal contracts"
+      },
+      "source_ids": [
+        "USASPEND:968bca9747"
+      ],
+      "tier": "confirmed",
+      "stale": false
+    },
+    {
+      "fact_kind": "customer_or_partnership",
+      "payload": {
+        "source_id": "SEED:2b04496c84",
+        "verbatim_quote": "worked with over 38 government agencies including the US Army Corps of Engineers",
+        "counterparty": "US Army Corps of Engineers",
+        "type": "customer_win",
+        "announced_date": null
+      },
+      "source_ids": [
+        "SEED:2b04496c84"
+      ],
+      "tier": "single_signal",
+      "stale": false
+    },
+    {
+      "fact_kind": "company_profile",
+      "payload": {
+        "source_id": "SEED:2b04496c84",
+        "verbatim_quote": "a family-operated company",
+        "attribute": "ownership_structure",
+        "value": "family-operated"
+      },
+      "source_ids": [
+        "SEED:2b04496c84"
+      ],
+      "tier": "single_signal",
+      "stale": false
+    },
+    {
+      "fact_kind": "company_profile",
+      "payload": {
+        "source_id": "SEED:2b04496c84",
+        "verbatim_quote": "has an outstanding track record of project delivery including design-build, design-bid-build",
+        "attribute": "services_offered",
+        "value": "design-build, design-bid-build"
+      },
+      "source_ids": [
+        "SEED:2b04496c84"
+      ],
+      "tier": "single_signal",
+      "stale": false
+    },
+    {
+      "fact_kind": "hiring_signals",
+      "payload": {
+        "source_id": "SEED:6448a3f73c",
+        "verbatim_quote": "Brantley Construction is on the hunt for a talented Project Manager",
+        "function": "other",
+        "role_count": 1,
+        "window_days": null,
+        "notable_titles": [
+          "Project Manager"
+        ],
+        "tech_keywords": [],
+        "as_of_date": null
+      },
+      "source_ids": [
+        "SEED:6448a3f73c"
+      ],
+      "tier": "single_signal",
+      "stale": false
+    },
+    {
+      "fact_kind": "company_profile",
+      "payload": {
+        "source_id": "SEED:6448a3f73c",
+        "verbatim_quote": "family-owned company",
+        "attribute": "ownership_structure",
+        "value": "family-owned"
+      },
+      "source_ids": [
+        "SEED:6448a3f73c"
+      ],
+      "tier": "single_signal",
+      "stale": false
+    },
+    {
+      "fact_kind": "company_profile",
+      "payload": {
+        "source_id": "SEED:6448a3f73c",
+        "verbatim_quote": "serving clients throughout the Southeast",
+        "attribute": "primary_markets",
+        "value": "Southeast"
+      },
+      "source_ids": [
+        "SEED:6448a3f73c"
+      ],
+      "tier": "single_signal",
+      "stale": false
+    }
+  ],
+  "gaps": [
+    "No earnings call transcript discovered in coverage window.",
+    "No relevant news articles found about this prospect.",
+    "Search returned source not about 'Brantley Construction Company': www.constructionnews.co.uk (https://www.constructionnews.co.uk/financial/near-50-jump-in-construction-companies-in-critical-financial-distress-01-05-2026/) — company phrase 'brantley construction' not present in source text",
+    "Search returned source not about 'Brantley Construction Company': www.fox10tv.com (https://www.fox10tv.com/2026/05/04/basf-lay-off-nearly-half-workforce-mcintosh-facility/) — company phrase 'brantley construction' not present in source text",
+    "Search returned source not about 'Brantley Construction Company': www.quiverquant.com (https://www.quiverquant.com/news/reAlpha+Tech+Corp.+Implements+Strategic+Restructuring+and+Workforce+Reduction+to+Enhance+Operational+Efficiency) — company phrase 'brantley construction' not present in source text",
+    "…and 19 more sources dropped by relevance gate (see logs for details)."
+  ],
+  "verifier_log": {
+    "quotes_checked": 72,
+    "quotes_passed": 42,
+    "stripped": [
+      {
+        "reason": "fact_date_out_of_window",
+        "fact_kind": "leadership_changes",
+        "source_id": "NEWSROOM:brantleyconstruction.com",
+        "fact_date": "2020-01-31",
+        "quote": "Matthew Brantley promoted to Vice President"
+      },
+      {
+        "reason": "value_not_supported_by_quote: year 1983 not present in quote",
+        "fact_kind": "company_profile",
+        "source_id": "NEWSROOM:brantleyconstruction.com",
+        "attribute": "founded_year",
+        "value": "1983",
+        "quote": "Brantley Construction has been a local, Charleston business for 40 years now"
+      },
+      {
+        "reason": "quote_not_in_source",
+        "fact_kind": "company_profile",
+        "source_id": "IND:dac5b95eb8",
+        "quote": "operated since 1976"
+      },
+      {
+        "reason": "quote_not_in_source",
+        "fact_kind": "company_profile",
+        "source_id": "IND:dac5b95eb8",
+        "quote": "projects throughout the Southeast"
+      },
+      {
+        "reason": "quote_not_in_source",
+        "fact_kind": "company_profile",
+        "source_id": "IND:15e1740bc4",
+        "quote": "License # | HIC.0635946 | Status | Active"
+      },
+      {
+        "reason": "quote_not_in_source",
+        "fact_kind": "leadership_changes",
+        "source_id": "IND:ae6a3f0da5",
+        "quote": "Sidney A. Brantley, President"
+      },
+      {
+        "reason": "fact_date_out_of_window",
+        "fact_kind": "litigation_or_regulatory",
+        "source_id": "IND:ae6a3f0da5",
+        "fact_date": "2008-10-13",
+        "quote": "Brantley protests PRT's posting of a Notice of Intent to Award"
+      },
+      {
+        "reason": "fact_date_out_of_window",
+        "fact_kind": "litigation_or_regulatory",
+        "source_id": "IND:e04ad328a4",
+        "fact_date": "2008-02-22",
+        "quote": "Lower State protest DVR's issuance of addenda"
+      },
+      {
+        "reason": "quote_not_in_source",
+        "fact_kind": "company_profile",
+        "source_id": "IND:e04ad328a4",
+        "quote": "840 Oakley Road Moncks Corner, SC 29461"
+      },
+      {
+        "reason": "value_not_supported_by_quote: first name 'matthew' not present in quote",
+        "fact_kind": "leadership_changes",
+        "source_id": "LI:b382f9b635",
+        "person": "Matthew Brantley",
+        "role": "Brantley Construction Company",
+        "quote": "Brantley Construction Company"
+      },
+      {
+        "reason": "value_not_supported_by_quote: headcount quote lacks employee/staff/team context",
+        "fact_kind": "company_profile",
+        "source_id": "LI:b382f9b635",
+        "attribute": "employee_count_range",
+        "value": "~500 employees",
+        "quote": "500 connections, 580 followers"
+      },
+      {
+        "reason": "value_not_supported_by_quote: headcount quote lacks employee/staff/team context",
+        "fact_kind": "company_profile",
+        "source_id": "LI:58ada33a52",
+        "attribute": "employee_count_range",
+        "value": "~64 employees",
+        "quote": "64 connections, 68 followers"
+      },
+      {
+        "reason": "value_not_supported_by_quote: first name 'chad' not present in quote",
+        "fact_kind": "leadership_changes",
+        "source_id": "LI:1703f0fc3e",
+        "person": "Chad Patterson",
+        "role": "project manager",
+        "quote": "project manager 3 title max"
+      },
+      {
+        "reason": "value_not_supported_by_quote: first name 'sid' not present in quote",
+        "fact_kind": "leadership_changes",
+        "source_id": "LI:a647dc14e3",
+        "person": "Sid Brantley",
+        "role": "founder",
+        "quote": "founder at Brantley Construction Company"
+      },
+      {
+        "reason": "value_not_supported_by_quote: first name 'rob' not present in quote",
+        "fact_kind": "leadership_changes",
+        "source_id": "LI:bb77ad7800",
+        "person": "Rob Brantley",
+        "role": "Senior vp",
+        "quote": "Senior vp at Brantley Construction Company"
+      },
+      {
+        "reason": "value_not_supported_by_quote: first name 'dan' not present in quote",
+        "fact_kind": "leadership_changes",
+        "source_id": "LI:ab681f0483",
+        "person": "Dan Brantley",
+        "role": "Owner",
+        "quote": "Owner, Brantley Construction and Landscaping"
+      },
+      {
+        "reason": "value_not_supported_by_quote: headcount quote lacks employee/staff/team context",
+        "fact_kind": "company_profile",
+        "source_id": "LI:ab681f0483",
+        "attribute": "employee_count_range",
+        "value": "~60 employees",
+        "quote": "59 connections, 62 followers"
+      },
+      {
+        "reason": "value_not_supported_by_quote: first name 'christina' not present in quote",
+        "fact_kind": "leadership_changes",
+        "source_id": "LI:9dc398f442",
+        "person": "Christina McAlhaney",
+        "role": "Estimator/Pre-Construction Services",
+        "quote": "Estimator/Pre-Construction Services Brantley Construction Company"
+      },
+      {
+        "reason": "fact_date_out_of_window",
+        "fact_kind": "leadership_changes",
+        "source_id": "SEED:2b04496c84",
+        "fact_date": "2020-01-01",
+        "quote": "Matthew Brantley became a Vice-President in 2020"
+      },
+      {
+        "reason": "fact_date_out_of_window",
+        "fact_kind": "leadership_changes",
+        "source_id": "SEED:2b04496c84",
+        "fact_date": "2021-01-01",
+        "quote": "Jacob Benson was promoted to Vice President in our North Carolina Division"
+      },
+      {
+        "reason": "quote_not_in_source",
+        "fact_kind": "customer_or_partnership",
+        "source_id": "SEED:2b04496c84",
+        "quote": "worked with over 38 government agencies including the Navy"
+      },
+      {
+        "reason": "quote_not_in_source",
+        "fact_kind": "customer_or_partnership",
+        "source_id": "SEED:2b04496c84",
+        "quote": "worked with over 38 government agencies including the Air Force"
+      },
+      {
+        "reason": "value_not_supported_by_quote: year 1976 not present in quote",
+        "fact_kind": "company_profile",
+        "source_id": "SEED:2b04496c84",
+        "attribute": "founded_year",
+        "value": "1976",
+        "quote": "has been serving clients throughout the Southeast for 45 years"
+      },
+      {
+        "reason": "value_not_supported_by_quote: value tokens not supported by quote",
+        "fact_kind": "company_profile",
+        "source_id": "SEED:2b04496c84",
+        "attribute": "services_offered",
+        "value": "preconstruction, project management, construction management, design-build, build-to-suit, development, up-fit, property restoration, LEED sustainable construction",
+        "quote": "provides a wide range of services including preconstruction, project management"
+      },
+      {
+        "reason": "fact_date_out_of_window",
+        "fact_kind": "leadership_changes",
+        "source_id": "SEED:d3d4780d7f",
+        "fact_date": "2020-01-31",
+        "quote": "Matthew Brantley promoted to Vice President"
+      },
+      {
+        "reason": "value_not_supported_by_quote: year 1983 not present in quote",
+        "fact_kind": "company_profile",
+        "source_id": "SEED:d3d4780d7f",
+        "attribute": "founded_year",
+        "value": "1983",
+        "quote": "Brantley Construction has been a local, Charleston business for 40 years now"
+      },
+      {
+        "reason": "quote_not_in_source",
+        "fact_kind": "company_profile",
+        "source_id": "SEED:6448a3f73c",
+        "quote": "specializing in Retail, Office, Industrial, Medical"
+      },
+      {
+        "reason": "value_not_supported_by_quote: headcount value not present in quote",
+        "fact_kind": "company_profile",
+        "source_id": "SEED:6448a3f73c",
+        "attribute": "employee_count_range",
+        "value": "~11-50 employees",
+        "quote": "11-50 employees"
+      },
+      {
+        "reason": "quote_not_in_source",
+        "fact_kind": "company_profile",
+        "source_id": "SEED:dac5b95eb8",
+        "quote": "operated since 1976"
+      },
+      {
+        "reason": "quote_not_in_source",
+        "fact_kind": "company_profile",
+        "source_id": "SEED:dac5b95eb8",
+        "quote": "projects throughout the Southeast"
+      }
+    ]
+  }
+}

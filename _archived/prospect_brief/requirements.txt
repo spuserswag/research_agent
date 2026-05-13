@@ -1,0 +1,15 @@
+openai>=1.50.0
+python-dotenv>=1.0
+pydantic>=2.6
+httpx>=0.27
+ddgs>=6.0
+tavily-python>=0.5       # paid-tier search backend (free 1000 queries/mo)
+trafilatura>=1.10
+lxml_html_clean>=0.2     # separated out of lxml 5+; required by justext (trafilatura dep)
+pdfplumber>=0.11         # PDF text extraction (10-Ks, court filings, OSHA reports)
+beautifulsoup4>=4.12
+python-dateutil>=2.9
+tenacity>=8.2
+rich>=13.7
+typer>=0.12
+pyyaml>=6.0

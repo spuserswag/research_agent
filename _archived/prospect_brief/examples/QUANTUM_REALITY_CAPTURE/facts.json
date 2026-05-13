@@ -1,0 +1,392 @@
+{
+  "company": "Quantum Reality Capture",
+  "ticker": null,
+  "ae": "Spenser",
+  "meeting_date": "2026-05-09",
+  "generated_at": "2026-05-08T05:35:08.723509Z",
+  "coverage_window_start": "2024-11-13",
+  "coverage_window_end": "2026-05-07",
+  "sources": [
+    {
+      "id": "LI:2217698470",
+      "type": "linkedin_profile",
+      "url": "https://www.linkedin.com/in/sawyer-lee-b87329168",
+      "publisher": "www.linkedin.com",
+      "publish_date": null,
+      "title": "Sawyer Lee - Quantum Reality Capture",
+      "accessed_at": "2026-05-08T05:33:49.245278Z",
+      "byline": null
+    },
+    {
+      "id": "LI:5930b29e50",
+      "type": "linkedin_profile",
+      "url": "https://www.linkedin.com/in/dtrentjarvis",
+      "publisher": "www.linkedin.com",
+      "publish_date": null,
+      "title": "Trent Jarvis - COO @ Quantum Reality Capture",
+      "accessed_at": "2026-05-08T05:33:49.245354Z",
+      "byline": null
+    },
+    {
+      "id": "LI:98d966603c",
+      "type": "linkedin_profile",
+      "url": "https://www.linkedin.com/in/michaeltoddjarvis",
+      "publisher": "www.linkedin.com",
+      "publish_date": null,
+      "title": "Todd Jarvis",
+      "accessed_at": "2026-05-08T05:33:49.245372Z",
+      "byline": null
+    },
+    {
+      "id": "LI:63954cd55e",
+      "type": "linkedin_profile",
+      "url": "https://www.linkedin.com/in/ashley-mckeage-82060961",
+      "publisher": "www.linkedin.com",
+      "publish_date": null,
+      "title": "Ashley McKeage - QRC | Director of Marketing and Business Development - Quantum Reality Capture",
+      "accessed_at": "2026-05-08T05:33:49.245388Z",
+      "byline": null
+    },
+    {
+      "id": "LI:d4b877901d",
+      "type": "linkedin_profile",
+      "url": "https://www.linkedin.com/in/brooks-johnson-778a0410a",
+      "publisher": "www.linkedin.com",
+      "publish_date": null,
+      "title": "Brooks Johnson - Founder & CEO of Quantum Reality Capture",
+      "accessed_at": "2026-05-08T05:33:52.727209Z",
+      "byline": null
+    },
+    {
+      "id": "LI:2dcce572e1",
+      "type": "linkedin_profile",
+      "url": "https://www.linkedin.com/company/quantum-reality-capture",
+      "publisher": "www.linkedin.com",
+      "publish_date": null,
+      "title": "Quantum Reality Capture | LinkedIn",
+      "accessed_at": "2026-05-08T05:33:52.727280Z",
+      "byline": null
+    },
+    {
+      "id": "LI:6c9627362b",
+      "type": "linkedin_profile",
+      "url": "https://www.linkedin.com/posts/brooks-johnson-778a0410a_aec-realitycapture-digitaltwins-activity-7428237161851879424-Rs7c",
+      "publisher": "www.linkedin.com",
+      "publish_date": null,
+      "title": "Quantum Reality Capture Partners with XGRIDS for Next-Gen Reality Capture Solutions | Brooks Johnson posted on the topic | LinkedIn",
+      "accessed_at": "2026-05-08T05:33:57.231658Z",
+      "byline": null
+    },
+    {
+      "id": "SEED:1084ca14b8",
+      "type": "user_seeded",
+      "url": "https://quantumrealitycapture.com/about/",
+      "publisher": "quantumrealitycapture.com",
+      "publish_date": null,
+      "title": "User-seeded: https://quantumrealitycapture.com/about/",
+      "accessed_at": "2026-05-08T05:33:57.741891Z",
+      "byline": null
+    },
+    {
+      "id": "SEED:f5414de256",
+      "type": "user_seeded",
+      "url": "https://quantumrealitycapture.com/team/",
+      "publisher": "quantumrealitycapture.com",
+      "publish_date": null,
+      "title": "User-seeded: https://quantumrealitycapture.com/team/",
+      "accessed_at": "2026-05-08T05:33:57.742012Z",
+      "byline": null
+    },
+    {
+      "id": "SEED:2dcce572e1",
+      "type": "linkedin_profile",
+      "url": "https://www.linkedin.com/company/quantum-reality-capture",
+      "publisher": "linkedin.com",
+      "publish_date": null,
+      "title": "User-seeded: https://www.linkedin.com/company/quantum-reality-capture",
+      "accessed_at": "2026-05-08T05:33:57.742047Z",
+      "byline": null
+    },
+    {
+      "id": "SEED:4feee89265",
+      "type": "user_seeded",
+      "url": "https://www.qrcgov.com/",
+      "publisher": "qrcgov.com",
+      "publish_date": null,
+      "title": "User-seeded: https://www.qrcgov.com/",
+      "accessed_at": "2026-05-08T05:33:57.742086Z",
+      "byline": null
+    }
+  ],
+  "facts": [
+    {
+      "fact_kind": "company_profile",
+      "payload": {
+        "source_id": "LI:2217698470",
+        "verbatim_quote": "Charleston, South Carolina, United States, US",
+        "attribute": "headquarters",
+        "value": "Charleston, SC"
+      },
+      "source_ids": [
+        "LI:2217698470",
+        "LI:d4b877901d",
+        "LI:2dcce572e1",
+        "SEED:2dcce572e1"
+      ],
+      "tier": "single_signal",
+      "stale": false
+    },
+    {
+      "fact_kind": "leadership_changes",
+      "payload": {
+        "source_id": "LI:5930b29e50",
+        "verbatim_quote": "Trent Jarvis - COO @ Quantum Reality Capture",
+        "person": "Trent Jarvis",
+        "role": "COO",
+        "change_type": "hired",
+        "effective_date": null
+      },
+      "source_ids": [
+        "LI:5930b29e50"
+      ],
+      "tier": "single_signal",
+      "stale": false
+    },
+    {
+      "fact_kind": "company_profile",
+      "payload": {
+        "source_id": "LI:98d966603c",
+        "verbatim_quote": "Quantum Reality Capture is a premier XGRIDS partner",
+        "attribute": "notable_clients",
+        "value": "XGRIDS"
+      },
+      "source_ids": [
+        "LI:98d966603c"
+      ],
+      "tier": "single_signal",
+      "stale": false
+    },
+    {
+      "fact_kind": "company_profile",
+      "payload": {
+        "source_id": "LI:98d966603c",
+        "verbatim_quote": "supplies the PortalCam and other XGRIDS scanning solutions",
+        "attribute": "services_offered",
+        "value": "PortalCam, scanning solutions"
+      },
+      "source_ids": [
+        "LI:98d966603c"
+      ],
+      "tier": "single_signal",
+      "stale": false
+    },
+    {
+      "fact_kind": "leadership_changes",
+      "payload": {
+        "source_id": "LI:63954cd55e",
+        "verbatim_quote": "Ashley McKeage - QRC | Director of Marketing and Business Development",
+        "person": "Ashley McKeage",
+        "role": "Director of Marketing and Business Development",
+        "change_type": "hired",
+        "effective_date": null
+      },
+      "source_ids": [
+        "LI:63954cd55e"
+      ],
+      "tier": "single_signal",
+      "stale": false
+    },
+    {
+      "fact_kind": "customer_or_partnership",
+      "payload": {
+        "source_id": "LI:63954cd55e",
+        "verbatim_quote": "partnership with XGRIDS",
+        "counterparty": "XGRIDS",
+        "type": "partnership",
+        "announced_date": null
+      },
+      "source_ids": [
+        "LI:63954cd55e",
+        "LI:6c9627362b"
+      ],
+      "tier": "single_signal",
+      "stale": false
+    },
+    {
+      "fact_kind": "company_profile",
+      "payload": {
+        "source_id": "LI:d4b877901d",
+        "verbatim_quote": "May 2021 - Present",
+        "attribute": "founded_year",
+        "value": "2021"
+      },
+      "source_ids": [
+        "LI:d4b877901d"
+      ],
+      "tier": "single_signal",
+      "stale": false
+    },
+    {
+      "fact_kind": "leadership_changes",
+      "payload": {
+        "source_id": "LI:6c9627362b",
+        "verbatim_quote": "Brooks Johnson, Founder & CEO",
+        "person": "Brooks Johnson",
+        "role": "Founder & CEO",
+        "change_type": "hired",
+        "effective_date": null
+      },
+      "source_ids": [
+        "LI:6c9627362b"
+      ],
+      "tier": "single_signal",
+      "stale": false
+    },
+    {
+      "fact_kind": "leadership_changes",
+      "payload": {
+        "source_id": "LI:6c9627362b",
+        "verbatim_quote": "Todd Jarvis, President & CRO",
+        "person": "Todd Jarvis",
+        "role": "President & CRO",
+        "change_type": "hired",
+        "effective_date": null
+      },
+      "source_ids": [
+        "LI:6c9627362b",
+        "SEED:1084ca14b8",
+        "SEED:f5414de256"
+      ],
+      "tier": "corroborated",
+      "stale": false
+    },
+    {
+      "fact_kind": "company_profile",
+      "payload": {
+        "source_id": "SEED:2dcce572e1",
+        "verbatim_quote": "Architecture and Planning",
+        "attribute": "primary_markets",
+        "value": "Architecture and Planning"
+      },
+      "source_ids": [
+        "SEED:2dcce572e1"
+      ],
+      "tier": "single_signal",
+      "stale": false
+    },
+    {
+      "fact_kind": "company_profile",
+      "payload": {
+        "source_id": "SEED:2dcce572e1",
+        "verbatim_quote": "LiDAR , BIM, and LiDAR Scanning",
+        "attribute": "specialties",
+        "value": "LiDAR, BIM, LiDAR Scanning"
+      },
+      "source_ids": [
+        "SEED:2dcce572e1"
+      ],
+      "tier": "single_signal",
+      "stale": false
+    },
+    {
+      "fact_kind": "company_profile",
+      "payload": {
+        "source_id": "SEED:2dcce572e1",
+        "verbatim_quote": "Public Company",
+        "attribute": "ownership_structure",
+        "value": "Public Company"
+      },
+      "source_ids": [
+        "SEED:2dcce572e1"
+      ],
+      "tier": "single_signal",
+      "stale": false
+    },
+    {
+      "fact_kind": "company_profile",
+      "payload": {
+        "source_id": "SEED:4feee89265",
+        "verbatim_quote": "Quantum Reality Capture is a LiDAR Imaging company",
+        "attribute": "services_offered",
+        "value": "LiDAR Imaging"
+      },
+      "source_ids": [
+        "SEED:4feee89265"
+      ],
+      "tier": "single_signal",
+      "stale": false
+    },
+    {
+      "fact_kind": "company_profile",
+      "payload": {
+        "source_id": "SEED:4feee89265",
+        "verbatim_quote": "We strive to be a trusted partner for our clients",
+        "attribute": "mission_statement",
+        "value": "be a trusted partner for our clients"
+      },
+      "source_ids": [
+        "SEED:4feee89265"
+      ],
+      "tier": "single_signal",
+      "stale": false
+    }
+  ],
+  "gaps": [
+    "No earnings call transcript discovered in coverage window.",
+    "No relevant news articles found about this prospect.",
+    "Search returned source not about 'Quantum Reality Capture': www.investors.com (https://www.investors.com/news/technology/ionq-stock-ionq-earnings-q12026-quantum-computing-stocks/) — company phrase 'quantum reality capture' not present in source text",
+    "Search returned source not about 'Quantum Reality Capture': glassalmanac.com (https://glassalmanac.com/reduce-repetitive-work-increase-velocity-sparks-layoff-backlash-in-2026-heres-why/) — company phrase 'quantum reality capture' not present in source text",
+    "Search returned source not about 'Quantum Reality Capture': m.economictimes.com (https://m.economictimes.com/tech/technology/meta-layoffs-more-cuts-possible-after-10-workforce-reduction-on-may-20/articleshow/130713979.cms) — company phrase 'quantum reality capture' not present in source text",
+    "…and 23 more sources dropped by relevance gate (see logs for details)."
+  ],
+  "verifier_log": {
+    "quotes_checked": 26,
+    "quotes_passed": 20,
+    "stripped": [
+      {
+        "reason": "value_not_supported_by_quote: headcount quote lacks employee/staff/team context",
+        "fact_kind": "company_profile",
+        "source_id": "LI:2217698470",
+        "attribute": "employee_count_range",
+        "value": "N/A",
+        "quote": "N/A - Present"
+      },
+      {
+        "reason": "value_not_supported_by_quote: first name 'brooks' not present in quote",
+        "fact_kind": "leadership_changes",
+        "source_id": "LI:d4b877901d",
+        "person": "Brooks Johnson",
+        "role": "Founder",
+        "quote": "Founder of Quantum Reality Capture"
+      },
+      {
+        "reason": "value_not_supported_by_quote: headcount value not present in quote",
+        "fact_kind": "company_profile",
+        "source_id": "LI:2dcce572e1",
+        "attribute": "employee_count_range",
+        "value": "~11 employees",
+        "quote": "Discover all 11 employees"
+      },
+      {
+        "reason": "quote_not_in_source",
+        "fact_kind": "company_profile",
+        "source_id": "LI:2dcce572e1",
+        "quote": "QRC delivers high-accuracy LiDAR, drone, and as-built reality capture services"
+      },
+      {
+        "reason": "quote_not_in_source",
+        "fact_kind": "company_profile",
+        "source_id": "SEED:2dcce572e1",
+        "quote": "Founded 2020"
+      },
+      {
+        "reason": "value_not_supported_by_quote: headcount value not present in quote",
+        "fact_kind": "company_profile",
+        "source_id": "SEED:2dcce572e1",
+        "attribute": "employee_count_range",
+        "value": "~2-10 employees",
+        "quote": "2-10 employees"
+      }
+    ]
+  }
+}

@@ -22,6 +22,8 @@ import type {
   BriefItem,
   GovContract,
   Lead,
+  PublishedBrief,
+  Risks,
   SnapshotItem,
   Source,
   SourcePack,
@@ -30,12 +32,103 @@ import type {
 
 export interface RenderedBrief {
   markdown: string;
+  /** PublishedBrief JSON — the canonical machine-readable contract.
+   *  Written to brief.json alongside brief.md.  */
+  published: PublishedBrief;
+}
+
+/**
+ * Compile (Lead + VerifiedBrief + Risks + SourcePack) into a single
+ * frontend-friendly `PublishedBrief`. Pure data transformation —
+ * no LLM, no I/O.
+ *
+ * The orchestrator calls this and persists the result to brief.json.
+ * The conference-copilot (and any future SDK client) consumes that file.
+ */
+export function compileBrief(
+  lead: Lead,
+  verified: VerifiedBrief,
+  risks: Risks | undefined,
+  sourcePack: SourcePack,
+): PublishedBrief {
+  const { brief, notes, passedVerification } = verified;
+  const stripped = notes.filter((n) => n.status === "removed").length;
+
+  // Count BriefItems across sections — used for signalQuality bucket.
+  const totalClaims =
+    (brief.executiveSnapshot?.length ?? 0) +
+    brief.icebreakers.length +
+    brief.valueAlignmentHooks.length +
+    brief.talkingPoints.length +
+    brief.potentialRedFlags.length +
+    (brief.prepNotes?.length ?? 0);
+
+  const sourceCount = sourcePack.sources.length;
+
+  let signalQuality: PublishedBrief["meta"]["signalQuality"];
+  if (sourceCount < 5 || totalClaims < 5) signalQuality = "low";
+  else if (stripped >= 3 || stripped / Math.max(totalClaims, 1) >= 0.3)
+    signalQuality = "thin";
+  else if (sourceCount < 10 || totalClaims < 10) signalQuality = "moderate";
+  else signalQuality = "rich";
+
+  // Compute the same banner string the markdown renderer uses, so
+  // frontend clients have it without re-implementing the rule.
+  let confidenceBanner: string | undefined;
+  if (sourceCount < 5 || totalClaims < 5) {
+    confidenceBanner =
+      `LOW-CONFIDENCE BRIEF: only ${sourceCount} source(s) and ` +
+      `${totalClaims} claim(s) surfaced. Treat everything below as ` +
+      `exploratory; the open questions are the main deliverable.`;
+  } else if (stripped >= 3 || stripped / Math.max(totalClaims, 1) >= 0.3) {
+    confidenceBanner =
+      `LIMITED CONFIDENCE: ${stripped} of ${totalClaims} claims failed ` +
+      `deterministic fact-verification and were removed. Corroborate ` +
+      `key claims in the meeting before relying on them.`;
+  }
+
+  const referencedIds = collectReferencedIds(verified);
+  const sources = sourcePack.sources.filter((s) => referencedIds.has(s.id));
+
+  return {
+    meta: {
+      schemaVersion: 1,
+      company: lead.company,
+      ae: lead.aeName,
+      meetingDate: lead.meetingAt,
+      generatedAt: new Date().toISOString(),
+      runId: lead.runId ?? "",
+      audience: lead.audience,
+      signalQuality,
+      passedVerification,
+      confidenceBanner,
+    },
+    executiveSnapshot: brief.executiveSnapshot ?? [],
+    tldr: brief.tldr,
+    callObjective: brief.callObjective,
+    icebreakers: brief.icebreakers,
+    valueAlignmentHooks: brief.valueAlignmentHooks,
+    talkingPoints: brief.talkingPoints,
+    potentialRedFlags: brief.potentialRedFlags,
+    attendeeIntel: brief.attendeeIntel,
+    objectionPredictions: brief.objectionPredictions,
+    govContracts: brief.govContracts ?? [],
+    prepNotes: brief.prepNotes ?? [],
+    risks: risks?.risks ?? [],
+    verifier: {
+      notes,
+      stripped,
+      checked: totalClaims,
+    },
+    sources,
+  };
 }
 
 export function renderBrief(
   lead: Lead,
   verified: VerifiedBrief,
   sourcePack: SourcePack,
+  risks?: Risks,
 ): RenderedBrief {
   const { brief } = verified;
   const referencedIds = collectReferencedIds(verified);
@@ -46,6 +139,7 @@ export function renderBrief(
     lead.meetingAt
       ? `_Meeting: ${formatMeeting(lead.meetingAt)} — AE: ${lead.aeName}_`
       : `_AE: ${lead.aeName}_`,
+    confidenceBanner(verified, sourcePack),
     "",
     executiveSnapshotSection(brief.executiveSnapshot ?? []),
     tldrSection(brief.tldr),
@@ -66,7 +160,51 @@ export function renderBrief(
     .filter((s) => s !== "")
     .join("\n\n");
 
-  return { markdown: md };
+  return {
+    markdown: md,
+    published: compileBrief(lead, verified, risks, sourcePack),
+  };
+}
+
+// ---------- Confidence banner (ported from Python prospect_brief) ----------
+
+/**
+ * Render a prominent LIMITED-CONFIDENCE / LOW-CONFIDENCE banner when the
+ * SourcePack is thin or the deterministic verifier stripped a meaningful
+ * fraction of claims. Distinct from the existing verification-failure
+ * banner — this one warns the AE *before* they read the brief that the
+ * underlying evidence is shallow.
+ */
+function confidenceBanner(verified: VerifiedBrief, pack: SourcePack): string {
+  const sourceCount = pack.sources.length;
+  const stripped = verified.notes.filter((n) => n.status === "removed").length;
+
+  // Count BriefItems across all sections (rough proxy for total claims).
+  const b = verified.brief;
+  const totalClaims =
+    (b.executiveSnapshot?.length ?? 0) +
+    b.icebreakers.length +
+    b.valueAlignmentHooks.length +
+    b.talkingPoints.length +
+    b.potentialRedFlags.length +
+    (b.prepNotes?.length ?? 0);
+
+  if (sourceCount < 5 || totalClaims < 5) {
+    return (
+      `> ⚠️ **LOW-CONFIDENCE BRIEF**: only ${sourceCount} source(s) and ` +
+      `${totalClaims} claim(s) surfaced. Treat everything below as ` +
+      `exploratory; the open questions are the main deliverable.`
+    );
+  }
+  if (stripped >= 3 || stripped / Math.max(totalClaims, 1) >= 0.3) {
+    return (
+      `> ⚠️ **LIMITED CONFIDENCE**: ${stripped} of ${totalClaims} claims ` +
+      `failed deterministic fact-verification and were removed. The brief ` +
+      `is useful as a primer, but corroborate key claims in the meeting ` +
+      `before relying on them.`
+    );
+  }
+  return ""; // healthy brief — no banner
 }
 
 // ---------- Section renderers ----------

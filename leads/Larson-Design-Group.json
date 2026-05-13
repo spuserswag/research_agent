@@ -1,0 +1,36 @@
+{
+  "company": "Larson Design Group",
+  "website": "https://www.larsondesigngroup.com",
+  "prospectName": "",
+  "prospectTitle": "",
+  "aeName": "Spenser",
+  "aeEmail": "spenserchun@arvayaconsulting.com",
+  "meetingAt": "2026-05-20T15:00:00Z",
+
+  "dealStage": "cold",
+  "prospectArchetype": "aec_firm",
+  "audience": "generic",
+  "excludeKeywords": [
+    "Larson Davis",
+    "Eric Larson",
+    "Larson Electronics"
+  ],
+
+  "productFocus": "AI consulting and implementation",
+  "engagementShape": "fixed-scope discovery sprint (2 weeks)",
+  "meetingType": "first_intro",
+  "introSource": "cold_outbound",
+  "introContext": "Cold outbound. Larson Design Group is a 100% employee-owned (ESOP) multi-discipline AEC firm headquartered in Williamsport, PA — architecture, engineering, planning, surveying. ~700 employees across offices in the eastern US. Federal, transportation, energy, and municipal end-markets.",
+
+  "callObjective": "Test whether LDG has a concrete bottleneck in their design / deliverable workflow (Revit interoperability, drawing-to-data extraction, automated quality checks, proposal-writing throughput) that a 2-week discovery sprint with Arvaya could quantify and propose to solve.",
+
+  "hypothesis": "Multi-discipline AEC firms at LDG's scale (~700 staff) typically have deep Bentley/Autodesk stacks with custom glue between Revit, Civil 3D, MicroStation, and project-management tooling. The ML/AI org is usually thin or non-existent at this size — they buy or partner rather than build. The wedge for Arvaya is automation of the high-volume, low-creativity work: proposal drafting, deliverable QA, drawing-to-data extraction for as-built documentation.",
+
+  "meetingContext": "First conversation — no prior contact. The AE will lead with discovery questions framed around their public ESOP narrative and federal-contract pipeline (they have a real fed/DOT/USACE practice). Outcome we want: identify one concrete workflow pain that's worth a follow-up scoping conversation. NOT trying to sell on this call.",
+
+  "competitiveContext": [
+    "in-house build (their default for anything strategic)",
+    "Bentley iTwin / Autodesk Forge for platform-level integrations",
+    "Slalom or Accenture for generic AI consulting"
+  ]
+}

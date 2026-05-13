@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Thin ergonomic wrapper so you can run `./prep --lead leads/quantum.json`
+# instead of `python3 prep.py --lead leads/quantum.json`. Same script,
+# fewer keystrokes — the closest equivalent to `npm run prep -- ...`.
+set -euo pipefail
+cd "$(dirname "$0")"
+exec python3 prep.py "$@"
