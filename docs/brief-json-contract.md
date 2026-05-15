@@ -28,16 +28,20 @@ Schema source of truth: `src/types.ts` → `PublishedBriefSchema`. Validated wit
     signalQuality: "rich" | "moderate" | "thin" | "low",
     passedVerification: boolean,
     confidenceBanner?: string,
+    freshness?: string,             // (NEW 2026-05-15) newest source publishedAt, ISO 8601
+    domain?: string,                // (NEW 2026-05-15) prospect website domain, e.g. "egnyte.com"
   },
 
   executiveSnapshot: SnapshotItem[],
   tldr: string[],
   callObjective: string,
-  icebreakers: BriefItem[],
+  icebreakers: BriefItem[],         // (CHANGED 2026-05-15) BriefItem now carries optional evidenceQuote
   valueAlignmentHooks: BriefItem[],
   talkingPoints: BriefItem[],
   potentialRedFlags: BriefItem[],
   attendeeIntel: AttendeeIntel[],
+  latestNews: LatestNewsItem[],     // (NEW 2026-05-15) max 5, dedicated news section
+  buyingCommittee: BuyingCommitteeMember[], // (NEW 2026-05-15) max 8, role-tagged stakeholders
   objectionPredictions: {
     objection: string,
     suggestedResponse: string,
@@ -58,7 +62,49 @@ Schema source of truth: `src/types.ts` → `PublishedBriefSchema`. Validated wit
 }
 ```
 
-`BriefItem`, `SnapshotItem`, `AttendeeIntel`, `GovContract`, `Risk`, `Source`, `VerificationNote` are all defined in `src/types.ts` — see Zod schemas there for exact field types.
+`BriefItem`, `SnapshotItem`, `AttendeeIntel`, `GovContract`, `Risk`, `Source`, `VerificationNote`, `LatestNewsItem`, `BuyingCommitteeMember` are all defined in `src/types.ts` — see Zod schemas there for exact field types.
+
+### `BriefItem` — claims with grounded evidence
+
+```ts
+{
+  label?: string,
+  text: string,
+  supportingSourceIds: string[],
+  evidenceQuote?: string,  // (NEW 2026-05-15) verbatim snippet that supports the claim
+}
+```
+
+When `evidenceQuote` is present, the deterministic verifier (`src/lib/verify.ts`) substring-checks it against the cited sources' `snippet` fields before this file is written. Items whose quote didn't match are stripped and recorded in `verifier.notes`. Items without an `evidenceQuote` pass through the lighter source-id-existence check — fine for compatibility, lower trust signal in the UI.
+
+### `LatestNewsItem` — dedicated news cards
+
+```ts
+{
+  headline: string,
+  url: string,
+  publishedAt?: string,   // ISO 8601 if known
+  summary: string,        // 1–2 sentences, CTO-scanning prose (so-what, not headline restatement)
+  sourceId: string,       // points back into sources[]
+}
+```
+
+The iPad viewer renders these as cards with the source domain + date + summary preview. Always check `brief.latestNews` before pulling news out of `talkingPoints` or `icebreakers` — news is no longer diffused across those sections.
+
+### `BuyingCommitteeMember` — role-tagged stakeholders
+
+```ts
+{
+  name: string,
+  title: string,
+  role: "champion" | "technical_evaluator" | "economic_buyer" | "blocker" | "unknown",
+  rationale: string,
+  linkedinUrl?: string,
+  supportingSourceIds: string[],
+}
+```
+
+Broader than `attendeeIntel` (who's on this specific call). Use this section to render the 3–8 stakeholders the AE should know about across the deal, with `role` driving colour-coding / sort order. `"unknown"` is the default when signal is ambiguous — the writer prefers it over guessing.
 
 ## Signal quality buckets (for triage UIs)
 

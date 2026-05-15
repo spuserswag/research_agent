@@ -155,6 +155,27 @@ export const LeadSchema = z.object({
    * `["Slalom", "Accenture AI&Analytics", "in-house build"]`.
    */
   competitiveContext: z.array(z.string()).optional(),
+
+  /**
+   * Recency window passed to the Researcher's Perplexity calls.
+   * - "day"   → last 24h (use for day-of follow-ups)
+   * - "week"  → last 7 days (use for follow-up calls)
+   * - "month" → last 30 days (consumer default when unset)
+   *
+   * Optional so existing fixtures and Lead literals stay backwards-
+   * compatible; consumers default to "month" when undefined.
+   *
+   * Added 2026-05-15 so the iPad UI can let Ryan choose freshness when
+   * he kicks off a brief.
+   */
+  recency: z.enum(["day", "week", "month"]).optional(),
+
+  /**
+   * Opt-in: send the brief by email via Resend once it's compiled.
+   * Requires RESEND_API_KEY + EMAIL_FROM in config. Off (undefined) by
+   * default — the primary delivery channel is the iPad viewer.
+   */
+  deliverByEmail: z.boolean().optional(),
 });
 export type Lead = z.infer<typeof LeadSchema>;
 
@@ -191,6 +212,16 @@ export const SourcePackSchema = z.object({
   lead: LeadSchema,
   generatedAt: z.string(),
   sources: z.array(SourceSchema).max(40),
+  /**
+   * Newest `publishedAt` across all sources, as ISO 8601. Computed by
+   * the orchestrator after the Researcher returns. The iPad UI renders
+   * "newest source is X days old" from this; downstream agents may use
+   * it as a freshness gate. Optional because some sources lack a
+   * publication date.
+   *
+   * Added 2026-05-15.
+   */
+  freshness: z.string().optional(),
 });
 export type SourcePack = z.infer<typeof SourcePackSchema>;
 
@@ -269,6 +300,19 @@ export const BriefItemSchema = z.object({
   label: z.string().optional(),
   text: z.string(),
   supportingSourceIds: z.array(z.string()),
+  /**
+   * Verbatim snippet from one of the cited sources that supports this
+   * claim. When present, the deterministic verifier (src/lib/verify.ts)
+   * substring-checks it against the cited sources' `snippet` fields —
+   * same rule that protects Risks.
+   *
+   * Optional for backwards compatibility with existing run records and
+   * to preserve graceful degradation: items without an evidenceQuote
+   * still pass the existence-of-source-id check.
+   *
+   * Added 2026-05-15.
+   */
+  evidenceQuote: z.string().optional(),
 });
 export type BriefItem = z.infer<typeof BriefItemSchema>;
 
@@ -300,6 +344,69 @@ export const AttendeeIntelSchema = z.object({
 });
 export type AttendeeIntel = z.infer<typeof AttendeeIntelSchema>;
 
+// ---------- Latest News ----------
+
+/**
+ * One news item shown in the dedicated "Latest News" section of the
+ * brief. Populated by the PersonalizationWriter from `Source.category
+ * === "news"` entries in the SourcePack, newest-first. Capped at 5.
+ *
+ * Separate from icebreakers/talkingPoints because the iPad UI renders
+ * news with its own visual treatment (date, source domain, summary
+ * preview) — the goal-statement explicitly called for "latest news"
+ * as a first-class deliverable.
+ *
+ * Added 2026-05-15.
+ */
+export const LatestNewsItemSchema = z.object({
+  headline: z.string().describe("Article or announcement headline as published."),
+  url: z.string().url().describe("Direct link to the article."),
+  publishedAt: z.string().optional().describe("ISO 8601 publication date if known."),
+  summary: z.string().describe("1-2 sentence summary, written for a CTO scanning a brief."),
+  sourceId: z.string().describe("The Source.id in the SourcePack that this item maps to."),
+});
+export type LatestNewsItem = z.infer<typeof LatestNewsItemSchema>;
+
+// ---------- Buying Committee ----------
+
+/**
+ * One member of the prospect's buying committee — broader than
+ * `attendeeIntel` (who's on this specific call) and narrower than the
+ * full org chart. CTO Ryan wants to know who he's likely interacting
+ * with across the deal, not just the people in the room today.
+ *
+ * `role` is a coarse tag the writer assigns based on signals in the
+ * SourcePack (interview snippets, hiring history, public statements,
+ * job title hierarchy). When the signal is ambiguous, use "unknown"
+ * rather than guessing.
+ *
+ * Added 2026-05-15.
+ */
+export const BuyingCommitteeMemberSchema = z.object({
+  name: z.string(),
+  title: z.string(),
+  /**
+   * Coarse role on this deal:
+   *  - champion             → publicly supportive, internal advocate
+   *  - technical_evaluator  → kicks the tires; cares about architecture / integrations
+   *  - economic_buyer       → has budget authority for the engagement
+   *  - blocker              → publicly skeptical or known to prefer in-house build
+   *  - unknown              → not enough signal to tag (DEFAULT when uncertain)
+   */
+  role: z.enum([
+    "champion",
+    "technical_evaluator",
+    "economic_buyer",
+    "blocker",
+    "unknown",
+  ]),
+  /** One sentence — what's the signal behind the role tag? */
+  rationale: z.string(),
+  linkedinUrl: z.string().url().optional(),
+  supportingSourceIds: z.array(z.string()),
+});
+export type BuyingCommitteeMember = z.infer<typeof BuyingCommitteeMemberSchema>;
+
 // ---------- Government Contract ----------
 
 export const GovContractSchema = z.object({
@@ -330,10 +437,35 @@ export const DraftBriefSchema = z.object({
    * and who owns the vendor evaluation."
    */
   callObjective: z.string(),
-  icebreakers: z.array(BriefItemSchema).min(2).max(5),
-  valueAlignmentHooks: z.array(BriefItemSchema).min(2).max(5),
+  /**
+   * Phase 3G (2026-05-15): floors softened from .min(2/2/3) to .min(0)
+   * so the Writer can gracefully degrade on thin-footprint companies
+   * instead of hallucinating to satisfy the schema. The renderer + the
+   * frontend surface empty sections with explanatory copy when
+   * signalQuality === "low".
+   */
+  icebreakers: z.array(BriefItemSchema).max(5),
+  valueAlignmentHooks: z.array(BriefItemSchema).max(5),
   potentialRedFlags: z.array(BriefItemSchema), // can be empty
-  talkingPoints: z.array(BriefItemSchema).min(3).max(8),
+  talkingPoints: z.array(BriefItemSchema).max(8),
+  /**
+   * Dedicated "Latest News" section — Source.category === "news" entries
+   * promoted out of icebreakers/talkingPoints into their own card so the
+   * iPad UI can render headlines + dates + summaries with their own
+   * visual treatment.
+   *
+   * Added 2026-05-15.
+   */
+  latestNews: z.array(LatestNewsItemSchema).max(5).optional(),
+  /**
+   * Broader than attendeeIntel — the people across the prospect's buying
+   * committee that Ryan should know about, even those NOT on this call.
+   * Includes a role tag (champion / technical_evaluator / economic_buyer
+   * / blocker / unknown) so the UI can colour-code or sort.
+   *
+   * Added 2026-05-15.
+   */
+  buyingCommittee: z.array(BuyingCommitteeMemberSchema).max(8).optional(),
   /**
    * People likely to be on the call or in the buying committee beyond
    * the primary prospect. Sourced from social/team signals.
@@ -416,6 +548,17 @@ export const PublishedBriefSchema = z.object({
     passedVerification: z.boolean(),
     /** Optional banner string the renderer adds when confidence is thin. */
     confidenceBanner: z.string().optional(),
+    /**
+     * Newest source publishedAt across the SourcePack, mirrored here so
+     * the frontend can render "data is X days old" without re-walking
+     * the sources array. ISO 8601, optional (some packs have no dated
+     * sources).
+     *
+     * Added 2026-05-15.
+     */
+    freshness: z.string().optional(),
+    /** Domain of the prospect — easier than parsing lead.website on the client. */
+    domain: z.string().optional(),
   }),
 
   // Sections directly from DraftBrief (no shape change — flat fields).
@@ -427,6 +570,10 @@ export const PublishedBriefSchema = z.object({
   talkingPoints: z.array(BriefItemSchema),
   potentialRedFlags: z.array(BriefItemSchema),
   attendeeIntel: z.array(AttendeeIntelSchema),
+  /** Added 2026-05-15. Empty array if Writer didn't populate. */
+  latestNews: z.array(LatestNewsItemSchema),
+  /** Added 2026-05-15. Empty array if Writer didn't populate. */
+  buyingCommittee: z.array(BuyingCommitteeMemberSchema),
   objectionPredictions: z.array(
     z.object({
       objection: z.string(),

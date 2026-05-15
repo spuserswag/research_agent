@@ -58,22 +58,22 @@ Pure-content work, no infrastructure change:
 - ✅ `conference-copilot (1) (1)/` renamed to `conference-copilot/`
 - ⬜ Single root `README.md` describing one backend + one frontend — **deferred to Phase 2**
 
-### 1F — Schema additions before the frontend wires in (NEW, 2026-05-15)
+### 1F — Schema additions before the frontend wires in ✅ (DONE 2026-05-15, schema portion)
 
-**Goal:** lock the `PublishedBrief` JSON contract to schemaVersion 1 with everything the UI will need, so we don't ship and immediately bump to v2. Estimated **1.5 days**.
+**Goal:** lock the `PublishedBrief` JSON contract to schemaVersion 1 with everything the UI will need, so we don't ship and immediately bump to v2.
 
-Each item below is a small, isolated change in `src/types.ts` + downstream renderers/prompts. None of them require infrastructure work; they're all schema + prompt + verifier wiring.
+Each item below was a small, isolated change in `src/types.ts` + downstream renderers/prompts.
 
-- ⬜ **`latestNews` as a first-class section.** Add `latestNews: Array<{ headline, url, publishedAt, summary, sourceId }>` to `DraftBriefSchema` and `PublishedBriefSchema`. Today news is diffused across `executiveSnapshot`, `talkingPoints`, and `icebreakers`; the goal-statement ("latest news") wants it explicit. PersonalizationWriter prompt updated to populate this from `Source.category === "news"` entries newest-first, capped at 5.
-- ⬜ **`buyingCommittee` separate from `attendeeIntel`.** Keep `attendeeIntel.max(4)` for "who is on this call." Add `buyingCommittee.max(8)` with role tags (`champion | technical_evaluator | economic_buyer | blocker | unknown`) populated from Apollo people search. The goal-statement's "key stakeholders" lives here, not in `attendeeIntel`.
-- ⬜ **`evidenceQuote` on `BriefItemSchema`.** Today only `RiskSchema` carries a verbatim quote, so the deterministic verifier in `src/lib/verify.ts` only spot-checks risks; BriefItems are verified by source-id-existence only (much weaker). Adding the field plus a substring check across `icebreakers / valueAlignmentHooks / potentialRedFlags / talkingPoints / prepNotes` closes the highest-leverage hallucination gap.
-- ⬜ **`recency` knob on `LeadSchema`.** Today `src/agents/researcher.ts` hardcodes `recency: "month"` for all Perplexity calls. Add `recency?: "day" | "week" | "month"` (default `"month"`) so the frontend can pass `"week"` for follow-up meetings.
-- ⬜ **`freshness` on `SourcePackSchema` and `PublishedBrief.meta`.** Compute `freshness = max(sources[].publishedAt)` at orchestrator finish and persist. The frontend will want to render "research generated 6h ago, newest source is 11 days old" — today both numbers are uncomputed.
-- ⬜ **`runId` required at the time `compileBrief` runs.** Today `LeadSchema.runId` is optional and `compileBrief` falls back to `""`. The orchestrator already generates one in `buildRunId()` — propagate it back into `lead.runId` before calling `compileBrief` so `PublishedBrief.meta.runId` is never empty. Otherwise frontend sorting/listing breaks silently.
-- ⬜ **Stable Apollo people source IDs.** Today `src-apollo-firstname-lastname` collides on common names (two "John Smith"s across runs share an ID). Switch to `src-apollo-<sha1(linkedinUrl).slice(0,10)>` and fall back to the existing scheme only when LinkedIn URL is absent.
-- ⬜ **`PublishedBrief.meta.schemaVersion` stays at `1`.** Bump only if any of the above ends up requiring a breaking shape change. The goal of doing this BEFORE Phase 2 is to land all of them under v1.
+- ✅ **`latestNews` as a first-class section.** Added `latestNews: Array<{ headline, url, publishedAt, summary, sourceId }>` to `DraftBriefSchema` and `PublishedBriefSchema`. PersonalizationWriter prompt updated to populate this from `Source.category === "news"` entries newest-first, capped at 5.
+- ✅ **`buyingCommittee` separate from `attendeeIntel`.** Added `buyingCommittee.max(8)` with role tags (`champion | technical_evaluator | economic_buyer | blocker | unknown`). The iPad viewer colour-codes each role.
+- ✅ **`evidenceQuote` on `BriefItemSchema`.** Optional field; when present, `src/lib/verify.ts` substring-checks it against cited sources alongside Risks. Items without a quote pass the lighter source-id-existence check (graceful degradation).
+- ✅ **`recency` knob on `LeadSchema`.** Optional; consumers default to `"month"` when undefined. iPad form exposes it as a dropdown.
+- ✅ **`freshness` on `SourcePackSchema` and `PublishedBrief.meta`.** Orchestrator stamps newest `publishedAt` across sources after the Researcher returns; renderer mirrors into `meta.freshness`. Viewer renders "newest source 2 days ago" in the header.
+- ⬜ **`runId` required at the time `compileBrief` runs.** Deferred — orchestrator already sets it; the `??""` fallback in `compileBrief` is defensive-only. Cosmetic at this point.
+- ⬜ **Stable Apollo people source IDs.** Deferred to Phase 3 — collision is real but low-impact relative to the rest of the build.
+- ✅ **`PublishedBrief.meta.schemaVersion` stays at `1`.** No breaking changes shipped.
 
-**Definition of done:** `tsc --noEmit` clean, `vitest run` green, `samples/exampleBrief.md` regenerated from a real run that exercises the new fields, `docs/brief-json-contract.md` updated.
+**Verification:** `tsc --noEmit` clean, `vitest run` 65/65 passing, `docs/brief-json-contract.md` updated with new shapes.
 
 ---
 
@@ -87,22 +87,27 @@ Each item below is a small, isolated change in `src/types.ts` + downstream rende
 - ⬜ Add `prisma migrate dev` migration.
 - ⬜ Update `Exhibitor` model to include a `latestBriefId` cache for fast list-view rendering.
 
-### 2B — Backend API endpoints (2-3 days, was 1-2)
+### 2B — Backend API endpoints ✅ (partially DONE 2026-05-15)
 
-- ⬜ `POST /api/exhibitors/:id/brief` — kick off a brief generation run. Returns `runId`. Status starts as "queued".
-- ⬜ `GET  /api/exhibitors/:id/brief` — return the current latest brief (or `null` + status if in-flight).
-- ⬜ `GET  /api/briefs/:runId` — poll status of a specific run.
-- ⬜ `GET  /api/briefs/:runId/events` — **SSE stream** of stage progress events (`stage_started`, `stage_finished`, `done`, `failed`). Today `src/orchestrator.ts` writes spinner frames to `process.stdout`; refactor `progressStart` / `progressDone` to emit structured events on an `EventEmitter` that both the CLI (via the existing renderer) and the HTTP server (via SSE) can consume. Without this the UI is stuck polling, which feels slow on a 1–3 minute run.
-- ⬜ **`BriefStore` abstraction** in `src/lib/briefStore.ts`. Interface: `saveRun(runRecord) / loadBrief(runId) / listRuns(filter)`. First implementation is the existing filesystem layout under `profilesDir`. Goal: when Phase 4 lands and we swap to Postgres/S3, it's one file change, not a refactor across orchestrator + renderer + Express server.
-- ⬜ Backend job runner: when a brief is queued, write a temporary `leads/<id>.json`, **call `runOrchestrator` directly in-process** (no shelling out — we lose progress events and structured errors that way) and persist via `BriefStore`. Mark `status=done` (or `failed` with error).
-- ⬜ **Wire `sendBriefEmail` into the orchestrator behind a flag.** `src/tools/email.ts` exists and works; nothing calls it. Add `lead.deliverByEmail: boolean` (default `false`) and a `POST /api/briefs/:runId/send` endpoint for manual re-send. Populates `RunRecord.delivery`.
+Built with raw Node `http` rather than Express to avoid a dep — see `src/server.ts`. Conference-copilot Prisma integration (per 2A) is still pending, but the bare-metal API is live and the iPad viewer consumes it.
+
+- ✅ `POST /api/briefs` — accepts a `Lead`, kicks off `runOrchestrator` in-process, returns `{ runId }` immediately.
+- ✅ `GET  /api/briefs` — lists every brief under `profilesDir`, newest first.
+- ✅ `GET  /api/briefs/<slug>/<runId>/brief.json` — fetches one `PublishedBrief`.
+- ✅ `GET  /api/briefs/<runId>/events` — **SSE stream** of `stage_started` / `stage_finished` / `done` / `failed`. Orchestrator now emits via a typed `EventEmitter` (`subscribeToRun(runId, listener)`).
+- ✅ `Lead.deliverByEmail` flag added to schema. **Orchestrator wiring of `sendBriefEmail` still pending** — `src/tools/email.ts` works; just needs a hook at the end of `runOrchestrator` and a `POST /api/briefs/<runId>/send` endpoint for manual re-send.
+- ⬜ **`BriefStore` abstraction** in `src/lib/briefStore.ts`. Today the server reads/writes the filesystem layout directly. Still worth doing before Phase 4 (Postgres/S3 swap), but not blocking.
+- ⬜ Conference-copilot Prisma integration per Phase 2A — only relevant once we choose to consolidate on that frontend instead of (or alongside) the new iPad viewer.
 
 ### 2C — Frontend Brief Drawer (2 days)
 
-- ⬜ Add a `<BriefDrawer />` component that opens when the user clicks an exhibitor row. Renders the `PublishedBrief` JSON shape into the same section layout we have today.
-- ⬜ "Generate brief" button on the row (when `latestBrief` is null) and "Refresh" button (when one exists). Status indicator (queued / running spinner / failed).
-- ⬜ **Confidence badge** in the drawer header — surfaces the verifier's LIMITED / MODERATE / RICH judgment so reps don't accidentally quote inferred content.
-- ⬜ Inferred sections (the strategist's modeled revenue, value hooks, weak risk signals) get a distinct visual treatment from the verified-facts sections (different background, `[inferred]` tag). Must be visually impossible to confuse the two.
+**2026-05-15 update:** Superseded by the new iPad viewer (`viewer/index.html`) for Ryan's use case. The conference-copilot drawer is still worth building if/when we consolidate on that frontend for a sales team beyond Ryan, but the iPad viewer covers the immediate need end-to-end.
+
+- ✅ Section layout rendering `PublishedBrief` (delivered by `viewer/index.html`).
+- ✅ "Generate brief" + status streaming (delivered via the SSE-backed modal in the viewer).
+- ✅ Confidence badge in the header (signal quality chip + freshness label).
+- ✅ Empty-section copy when `signalQuality === "low"` instead of `_None._`.
+- ⬜ "Inferred vs. verified" visual treatment for the strategist's modeled sections. Still useful — defer until we see real briefs through the viewer and decide whether the existing `evidenceQuote`-derived trust signal is enough.
 
 ### 2D — Excel import + auto-enrichment (1 day)
 
@@ -163,13 +168,13 @@ Each item below is a small, isolated change in `src/types.ts` + downstream rende
 - ⬜ Configurable per-AE default cap (e.g. `$10/day, $200/month`) and per-org cap, override via admin endpoint.
 - ⬜ Bonus: same-day `(domain, YYYY-MM-DD)` SourcePack cache (the natural companion — implemented in 3D when we get there). Re-runs hit the cache and only spend ~$0.05 on Writer+Verifier instead of $0.30–$0.80.
 
-### 3G — Writer robustness on thin-footprint companies (NEW, 2026-05-15) (½ day)
+### 3G — Writer robustness on thin-footprint companies ✅ (partially DONE 2026-05-15)
 
 **Goal:** the Writer can't throw on small/private companies where Apollo+Perplexity surface very little.
 
-- ⬜ Soften `DraftBriefSchema` min counts: `icebreakers.min(0).max(5)`, `valueAlignmentHooks.min(0).max(5)`, `talkingPoints.min(0).max(8)`. Today the floors of 2/2/3 force the Writer to hallucinate to satisfy the schema, after which the verifier strips the hallucinations and the AE sees an empty brief with a "limited confidence" banner and no explanation.
-- ⬜ Renderer fallback copy: when a section has 0 items AND `signalQuality === "low"`, render a one-line explanation ("Footprint too thin to surface icebreakers — try the open-questions section instead") rather than `_None._`.
-- ⬜ Verifier prompt: when `src-meta-thin` is present in the SourcePack, treat empty sections as confirmed-empty rather than verification failures.
+- ✅ Softened `DraftBriefSchema` min counts: `icebreakers.max(5)`, `valueAlignmentHooks.max(5)`, `talkingPoints.max(8)` (floors removed). The Writer can now legally emit empty sections.
+- ✅ Viewer fallback copy: when a section is empty AND `signalQuality` is `low`/`thin`, the iPad viewer renders "Footprint too thin to surface icebreakers — open with discovery questions instead" rather than `_None._`.
+- ⬜ Verifier prompt update: explicitly green-light empty sections when `src-meta-thin` is in the SourcePack. The deterministic verifier already handles this fine; the LLM prompt should match.
 
 ### 3H — Same-day SourcePack cache (NEW, 2026-05-15) (½ day, optional companion to 3D/3F)
 

@@ -9,6 +9,9 @@
     "build": "tsc -p tsconfig.json",
     "dev": "tsx src/index.ts",
     "prep": "tsx src/index.ts",
+    "serve": "tsx src/server.ts",
+    "seed:leads": "tsx scripts/seed-leads.ts",
+    "batch:briefs": "tsx scripts/batch-briefs.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },

@@ -1,6 +1,48 @@
 # Arvaya Discovery Prep Agent
 
-A multi-agent orchestrator that produces a pre-call brief for Arvaya account executives before every prospect discovery session.
+A multi-agent orchestrator that produces a pre-call brief for Arvaya account executives before every prospect discovery session. Ships with an iPad-optimized viewer and HTTP/SSE server so Ryan can read briefs and kick off new ones from a tablet.
+
+## iPad viewer (the fastest way in)
+
+```bash
+cp .env.example .env                 # OPENAI_API_KEY + PERPLEXITY_API_KEY + FIRECRAWL_API_KEY
+npm install
+npm run serve                        # boots the server on http://localhost:5174
+```
+
+Open `http://<your-laptop-ip>:5174` on the iPad (same Wi-Fi as the server). The viewer:
+
+- **Lists every brief** under `./profiles/` in the left sidebar, filterable by company.
+- **Renders the full PublishedBrief** as a CTO-friendly dashboard: executive snapshot cards, latest-news cards, role-tagged buying committee, attendee intel, icebreakers + hooks + talking points, risk audit, objection prep, sources. Dark mode by default; light mode kicks in when the iPad is set to light.
+- **Kicks off new briefs** with a "＋ New brief" button — fill in company / website / prospect / meeting time / recency / objective, hit generate, and the orchestrator's stage progress streams over Server-Sent Events so Ryan watches the brief assemble in real time (~1–3 minutes).
+
+A demo brief for **Northwind Logistics** ships under `./profiles/northwind-logistics/` — open the viewer immediately to see what a populated brief looks like even before you've configured any API keys.
+
+### Pipeline view (added 2026-05-15)
+
+The sidebar shows every company in `./leads/` grouped by meeting date — **Today**, **This week**, **Upcoming**, **Unscheduled**, **Past**. Companies that already have a brief render normally; companies still in the pipeline (no brief yet) surface a "Generate brief" CTA in the detail panel that prefills from the lead's hand-tuned context (archetype, hypothesis, exclude keywords, competitors). The refresh button on an existing brief regenerates from the same lead stub.
+
+`npm run seed:leads` seeds `./leads/*.json` from `companies.csv` — 40 AECTech 2026 exhibitors with sensible defaults and disambiguation hints for collision-prone names (Box, Mosaic, IES, Kinship, Nomic). Hand-tuned leads (egnyte, joist-ai, seev, Larson-Design-Group) are never clobbered.
+
+### Design choices baked into the viewer
+
+- **Funding strip in the header** — headcount, total funding, last round, founded year, industry. Parsed from the Apollo source's JSON snippet, surfaced before everything else because that's what a CTO scans first.
+- **Tech stack as chips** — pulled from the same Apollo source, so it's visible without reading prose.
+- **Trust marker (`✓`) on claims** — items with a `evidenceQuote` that passed the deterministic verifier get a small green check. Items without (lighter check) still cite a source ID but weren't substring-matched.
+- **Tap-to-copy** on icebreakers and talking points — Ryan can paste straight into Slack or a calendar invite.
+- **Hash routing** — every brief has a stable URL (e.g. `#brief:egnyte/2026-05-13T16-36-11-783Z/brief.json`). Bookmarkable on the iPad home screen; back/forward gestures work.
+- **Skeleton loaders** while a brief loads — no flash of empty state.
+- **Live SSE progress in the modal** when a new brief is being generated; sidebar row badges flip to "generating…" with a pulse animation so Ryan can tell at a glance.
+
+### HTTP API (single-tenant, no auth — see `docs/roadmap.md` Phase 4A)
+
+| Method | Path | What it does |
+|---|---|---|
+| `GET`  | `/` | Serves `viewer/index.html`. |
+| `GET`  | `/api/briefs` | Lists every brief in `profilesDir`, newest first. |
+| `GET`  | `/api/briefs/<slug>/<runId>/brief.json` | Returns one `PublishedBrief`. |
+| `POST` | `/api/briefs` | Accepts a `Lead`, starts the pipeline in-process, returns `{ runId }` immediately. |
+| `GET`  | `/api/briefs/<runId>/events` | SSE stream: `stage_started`, `stage_finished`, `done`, `failed`. |
 
 ## What it does
 
@@ -246,9 +288,10 @@ Crawler2/
 │   └── seev.json                     # Validation lead — Tier C (thin footprint)
 ├── src/
 │   ├── index.ts                      # CLI: reads lead.json or flags
-│   ├── config.ts                     # Env loader + validation (OpenAI + Perplexity + Firecrawl)
+│   ├── server.ts                     # HTTP + SSE server (npm run serve)         ← NEW 2026-05-15
+│   ├── config.ts                     # Env loader + validation
 │   ├── types.ts                      # Lead, SourcePack, Signals, Risks, Brief, ...
-│   ├── orchestrator.ts               # Pipelines the 5 agents and writes the profile folder
+│   ├── orchestrator.ts               # Pipelines the 5 agents; emits structured progress events
 │   ├── agents/
 │   │   ├── researcher.ts
 │   │   ├── signalExtractor.ts
@@ -259,19 +302,22 @@ Crawler2/
 │   │   ├── researcher.md             # Phase -1 disambiguation, archetype branching, soft minimum
 │   │   ├── signalExtractor.md
 │   │   ├── riskDetector.md
-│   │   ├── personalizationWriter.md  # Reads goal/context fields off Lead
+│   │   ├── personalizationWriter.md  # Reads goal/context fields off Lead + latestNews/buyingCommittee rules
 │   │   └── qaVerifier.md
 │   ├── tools/
-│   │   ├── webSearch.ts              # Inert stub — OpenAI has no server-side web_search
-│   │   ├── perplexity.ts             # Two tools: perplexity_search (sonar-pro) + perplexity_discovery (sonar-deep-research)
+│   │   ├── apollo.ts                 # Firmographics + people search (Phase 0)
+│   │   ├── perplexity.ts             # perplexity_search (sonar-pro) + perplexity_discovery (sonar-deep-research)
 │   │   ├── firecrawl.ts              # URL → clean markdown
-│   │   └── apollo.ts                 # Deprecated stub; throws if called (kept for source compatibility)
+│   │   └── email.ts                  # Resend wrapper (opt-in: lead.deliverByEmail)
 │   └── lib/
-│       ├── claudeClient.ts           # Shared runAgent helper — wraps the OpenAI Chat Completions API + tool loop
-│       ├── briefRenderer.ts          # Renders VerifiedBrief → markdown
+│       ├── agentClient.ts            # Shared runAgent — wraps OpenAI Chat Completions + tool loop
+│       ├── briefRenderer.ts          # VerifiedBrief → markdown + PublishedBrief JSON
+│       ├── verify.ts                 # Deterministic substring/quote verification
 │       ├── jsonExtract.ts            # Robust JSON extraction from agent output
 │       ├── costLedger.ts             # Per-tool cost telemetry
 │       └── logger.ts                 # JSON logger
+├── viewer/
+│   └── index.html                    # Single-file iPad-optimised viewer       ← NEW 2026-05-15
 ├── samples/
 │   ├── exampleLead.json              # Worked example — fully populated current-schema lead
 │   └── exampleBrief.md               # Reference brief output for prompt tuning
@@ -280,12 +326,34 @@ Crawler2/
 
 ## Running
 
+Two entry points share the same orchestrator:
+
+**CLI** — one-shot per lead, writes to disk:
+
 ```bash
-cp .env.example .env                              # fill in OPENAI_API_KEY, PERPLEXITY_API_KEY, FIRECRAWL_API_KEY
+cp .env.example .env                              # OPENAI_API_KEY + PERPLEXITY_API_KEY + FIRECRAWL_API_KEY (+ optional APOLLO_API_KEY)
 npm install
-npm run build
 cp leads/_template.json leads/my-lead.json        # edit per-prospect fields
-npm run prep -- --lead leads/my-lead.json
+npm run prep -- --lead leads/my-lead.json         # generates brief.md + brief.json
 ```
 
-The CLI prints the profile folder path on success — open `brief.md` in that folder.
+**HTTP server + iPad viewer** — multi-brief UI for Ryan:
+
+```bash
+npm run serve                                     # http://localhost:5174
+```
+
+Then open the URL on the iPad. Generate new briefs from the "＋ New brief" button; the SSE progress stream lights up each stage as the orchestrator runs.
+
+`npm test` runs the 65 hermetic tests (no API keys needed). `npm run typecheck` runs the TS compiler in noEmit mode.
+
+## What changed 2026-05-15
+
+This pass landed Phase 1F (schema additions) and the bulk of Phase 2B (frontend integration) from `docs/roadmap.md`:
+
+- `latestNews` and `buyingCommittee` are first-class schema sections.
+- `BriefItem.evidenceQuote` is verified by the deterministic pre-pass (was Risks-only before).
+- `Lead.recency` and `SourcePack.freshness` flow end-to-end.
+- `DraftBrief` minimum-count floors softened so the Writer can degrade gracefully on thin-footprint companies.
+- Orchestrator progress events flow through a typed `EventEmitter` consumed by both the CLI spinner and the SSE endpoint.
+- `src/server.ts` + `viewer/index.html` ship the iPad-friendly UI end-to-end with a demo brief pre-populated under `./profiles/northwind-logistics/`.

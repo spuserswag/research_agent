@@ -594,8 +594,12 @@ export function verifyBriefAgainstSources(
   });
 
   // Verify every BriefItem has at least one valid supporting source id.
+  // When the item carries an `evidenceQuote`, also substring-check it
+  // against the cited sources' snippets (same rule as Risks). Items
+  // without an evidenceQuote get the lighter id-existence check —
+  // graceful degradation, but lower trust.
   const sections: Array<
-    [string, Array<{ text: string; supportingSourceIds: string[] }>]
+    [string, Array<{ text: string; supportingSourceIds: string[]; evidenceQuote?: string }>]
   > = [
     ["icebreakers", brief.icebreakers],
     ["valueAlignmentHooks", brief.valueAlignmentHooks],
@@ -613,6 +617,20 @@ export function verifyBriefAgainstSources(
           claimText: item.text.slice(0, 80),
           reason: `none of the supportingSourceIds (${item.supportingSourceIds.join(", ")}) exist in the SourcePack`,
         });
+        return;
+      }
+      if (item.evidenceQuote && item.evidenceQuote.length > 0) {
+        const matched = validIds.some((id) => {
+          const src = sourceById.get(id);
+          return src ? quoteAppearsInSource(item.evidenceQuote!, src.snippet) : false;
+        });
+        if (!matched) {
+          stripped.push({
+            location: `${section}[${i}]`,
+            claimText: item.text.slice(0, 80),
+            reason: `evidenceQuote not found in any cited source (${validIds.join(", ")})`,
+          });
+        }
       }
     });
   }

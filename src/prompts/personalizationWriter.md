@@ -319,6 +319,32 @@ Reply with **only** a JSON object, no prose, no code fence:
   "attendeeIntel": [
     { "name": "...", "title": "...", "note": "...", "supportingSourceIds": ["src-8"] }
   ],
+  "latestNews": [
+    {
+      "headline": "Northwind raises $40M Series C",
+      "url": "https://example.com/article",
+      "publishedAt": "2026-04-22",
+      "summary": "One- to two-sentence summary aimed at a CTO scanning the brief. State the so-what, not the headline restatement.",
+      "sourceId": "src-3"
+    }
+  ],
+  "buyingCommittee": [
+    {
+      "name": "Pat Lee",
+      "title": "VP Data",
+      "role": "champion",
+      "rationale": "Inbound contact; publicly cited Arvaya's RAG case study.",
+      "linkedinUrl": "https://linkedin.com/in/example",
+      "supportingSourceIds": ["src-2"]
+    },
+    {
+      "name": "Marcus Webb",
+      "title": "VP AI Engineering",
+      "role": "blocker",
+      "rationale": "Hired Feb 2026 with explicit mandate to build the analytics product in-house.",
+      "supportingSourceIds": ["src-6"]
+    }
+  ],
   "objectionPredictions": [
     { "objection": "...", "suggestedResponse": "...", "supportingSourceIds": ["src-6"] }
   ],
@@ -330,3 +356,30 @@ Reply with **only** a JSON object, no prose, no code fence:
   ]
 }
 ```
+
+# New fields (added 2026-05-15)
+
+## `latestNews` (optional, max 5)
+
+Promote the most recent news articles, press releases, or announcements from the SourcePack's `category: "news"` entries into this dedicated section, newest first. The iPad UI renders each as a card with the headline, source domain, date, and your summary. Rules:
+
+- Only items whose `Source.category === "news"` may go here. Press releases and product launches qualify.
+- Your `summary` is 1–2 sentences written for a CTO scanning the brief — state the so-what (what changed, what's the implication for the meeting), not a restatement of the headline.
+- The `sourceId` MUST point at an existing source in the SourcePack. The deterministic verifier rejects unknown IDs.
+- If no news entries exist in the SourcePack, omit the field entirely (do NOT emit an empty array — Zod allows omitting).
+
+## `buyingCommittee` (optional, max 8)
+
+Broader than `attendeeIntel`. List the 3–8 people across the prospect's buying committee that Ryan should know about, INCLUDING those not on this specific call. Tag each with a coarse role:
+
+- `champion` — publicly supportive; internal advocate.
+- `technical_evaluator` — kicks the tires; cares about architecture, integrations, security.
+- `economic_buyer` — has budget authority.
+- `blocker` — publicly skeptical or known to prefer in-house build.
+- `unknown` — DEFAULT when signal is ambiguous. Use this generously rather than guessing.
+
+`rationale` is one sentence: what signal in the SourcePack drives the role tag. Cite source IDs to back it. If you can't ground a person in a source, leave them OUT — do not invent committee members.
+
+## `evidenceQuote` on every BriefItem (optional, strongly preferred)
+
+For every entry in `icebreakers`, `valueAlignmentHooks`, `potentialRedFlags`, `talkingPoints`, and `prepNotes`, include `evidenceQuote`: the verbatim ≤300-char excerpt from one of the cited sources that supports the claim. The deterministic verifier substring-checks this — claims with a present-but-unmatched quote will be stripped. Items without an evidenceQuote pass through the lighter source-id-existence check (graceful degradation, but lower trust signal in the UI).

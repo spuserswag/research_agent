@@ -22,6 +22,7 @@
 
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { EventEmitter } from "node:events";
 import { getConfig } from "./config.js";
 import type {
   Lead,
@@ -49,12 +50,62 @@ const STAGES = [
 ] as const;
 
 const TOTAL = STAGES.length;
+
+// ---------- Structured progress events (shared with the HTTP/SSE server) ----------
+
+/**
+ * Stage lifecycle events emitted by the orchestrator. The CLI's spinner
+ * listens to these and renders them as terminal output; the HTTP server
+ * forwards them to SSE clients (so the iPad viewer can show live status
+ * without polling).
+ */
+export type OrchestratorEvent =
+  | { type: "stage_started"; stage: number; total: number; label: string }
+  | { type: "stage_finished"; stage: number; total: number; label: string; durationMs: number; note?: string }
+  | { type: "done"; runId: string; profilePath: string; briefPath: string; totalMs: number }
+  | { type: "failed"; runId: string; error: string };
+
+/**
+ * Per-run event bus. Each call to `runOrchestrator` instantiates one and
+ * exposes it on the returned promise via the helper below so consumers
+ * (the HTTP layer) can attach listeners synchronously after the call.
+ */
+const _orchestratorBuses = new Map<string, EventEmitter>();
+
+/**
+ * Subscribe to a run's event stream. Returns an unsubscribe function.
+ * Looking up by runId is loose: the orchestrator only registers the
+ * bus once it has resolved the runId (which is immediately at top of
+ * runOrchestrator), so HTTP handlers should pass a runId derived from
+ * their POST response.
+ */
+export function subscribeToRun(
+  runId: string,
+  listener: (event: OrchestratorEvent) => void,
+): () => void {
+  let bus = _orchestratorBuses.get(runId);
+  if (!bus) {
+    bus = new EventEmitter();
+    _orchestratorBuses.set(runId, bus);
+  }
+  bus.on("event", listener);
+  return () => {
+    bus!.off("event", listener);
+  };
+}
+
+function emitEvent(runId: string, event: OrchestratorEvent): void {
+  const bus = _orchestratorBuses.get(runId);
+  if (bus) bus.emit("event", event);
+}
+
 const BAR_WIDTH = 28;
 
 let _stageStart = Date.now();
 let _runStart = Date.now();
 let _spinnerTimer: ReturnType<typeof setInterval> | undefined;
 let _currentLabel = "";
+let _currentRunId: string | undefined; // set per-run inside runOrchestrator
 
 const SPINNER = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
 let _spinIdx = 0;
@@ -88,13 +139,32 @@ function progressStart(stageIndex: number): void {
   process.stdout.write(`\r${bar(stageIndex)} ${pct}%\n`);
   _stageStart = Date.now();
   startSpinner(`[${stageIndex + 1}/${TOTAL}] ${label}`);
+  if (_currentRunId) {
+    emitEvent(_currentRunId, {
+      type: "stage_started",
+      stage: stageIndex,
+      total: TOTAL,
+      label,
+    });
+  }
 }
 
 function progressDone(stageIndex: number, note?: string): void {
   stopSpinner();
-  const elapsed = ((Date.now() - _stageStart) / 1000).toFixed(1);
+  const durationMs = Date.now() - _stageStart;
+  const elapsed = (durationMs / 1000).toFixed(1);
   const label = STAGES[stageIndex] ?? "Done";
   process.stdout.write(`\r✓ [${stageIndex + 1}/${TOTAL}] ${label}  ${elapsed}s${note ? `  — ${note}` : ""}\n`);
+  if (_currentRunId) {
+    emitEvent(_currentRunId, {
+      type: "stage_finished",
+      stage: stageIndex,
+      total: TOTAL,
+      label,
+      durationMs,
+      note,
+    });
+  }
 }
 
 function progressFinish(openaiUsage?: { inputTokens: number; outputTokens: number }): void {
@@ -153,6 +223,11 @@ export async function runOrchestrator(leadIn: Lead): Promise<OrchestratorResult>
   };
 
   _runStart = Date.now();
+  _currentRunId = runId;
+  // Ensure a bus exists for this run, even if no one's subscribed yet.
+  if (!_orchestratorBuses.has(runId)) {
+    _orchestratorBuses.set(runId, new EventEmitter());
+  }
   resetLedger();
   resetFirecrawlCap();
   process.stdout.write(`\nPreparing brief for ${lead.company}\n\n`);
@@ -160,7 +235,10 @@ export async function runOrchestrator(leadIn: Lead): Promise<OrchestratorResult>
   try {
     // 1. Researcher → SourcePack
     progressStart(0);
-    const { result: sourcePack, usage: researcherUsage } = await runResearcher(lead);
+    const { result: rawSourcePack, usage: researcherUsage } = await runResearcher(lead);
+    // Stamp freshness (newest publishedAt) onto the pack so downstream
+    // agents and the renderer don't have to recompute it.
+    const sourcePack = stampFreshness(rawSourcePack);
     record.sourcePack = sourcePack;
     await writeJson(path.join(researchDir, "sources.json"), sourcePack);
     progressDone(0, `${sourcePack.sources.length} sources`);
@@ -242,18 +320,51 @@ export async function runOrchestrator(leadIn: Lead): Promise<OrchestratorResult>
     progressDone(4);
     progressFinish(total);
 
+    emitEvent(runId, {
+      type: "done",
+      runId,
+      profilePath,
+      briefPath,
+      totalMs: Date.now() - _runStart,
+    });
+    // Tear down the bus after a short delay so any straggling SSE
+    // listeners (the iPad just polled in to see the final state) can
+    // pick up the "done" event before we drop references.
+    setTimeout(() => _orchestratorBuses.delete(runId), 30_000);
+    _currentRunId = undefined;
+
     return { verified, profilePath, briefPath };
   } catch (err) {
     stopSpinner();
     record.error = err instanceof Error ? err.message : String(err);
     record.finishedAt = new Date().toISOString();
     await writeJson(path.join(profilePath, "run.json"), record);
+    emitEvent(runId, {
+      type: "failed",
+      runId,
+      error: record.error,
+    });
+    setTimeout(() => _orchestratorBuses.delete(runId), 30_000);
+    _currentRunId = undefined;
     throw err;
   }
 }
 
 async function writeJson(p: string, data: unknown): Promise<void> {
   await writeFile(p, JSON.stringify(data, null, 2), "utf8");
+}
+
+/**
+ * Stamp `freshness` (newest source publishedAt) onto a SourcePack. Pure
+ * helper so the renderer + downstream agents don't have to recompute.
+ */
+function stampFreshness(pack: import("./types.js").SourcePack): import("./types.js").SourcePack {
+  const dates = pack.sources
+    .map((s) => s.publishedAt)
+    .filter((d): d is string => typeof d === "string" && d.length > 0)
+    .sort()
+    .reverse();
+  return { ...pack, freshness: dates[0] };
 }
 
 function buildRunId(): string {

@@ -1,0 +1,25 @@
+{
+  "company": "Full Sail Partners",
+  "website": "https://www.fullsailpartners.com",
+  "prospectName": "",
+  "prospectTitle": "Founder or Head of Product",
+  "aeName": "Ryan",
+  "aeEmail": "ryan@arvayaconsulting.com",
+  "dealStage": "cold",
+  "prospectArchetype": "aec_vendor",
+  "excludeKeywords": [],
+  "productFocus": "AI consulting and implementation",
+  "engagementShape": "fixed-scope discovery sprint (2 weeks), with optional implementation phase",
+  "meetingType": "first_intro",
+  "introSource": "event",
+  "introContext": "AECTech 2026 — sponsor or exhibitor; first conversation.",
+  "callObjective": "Identify one concrete pain in Full Sail Partners's AI / data roadmap that Arvaya can credibly accelerate, then decide whether a 2-week discovery sprint is worth proposing.",
+  "hypothesis": "Full Sail Partners has shipped its core product but is now under pressure to add AI-native capabilities. The applied-ML / data org is likely thin relative to the roadmap, so build-vs-partner is live.",
+  "meetingContext": "First conversation. Full Sail Partners is on the AECTech 2026 exhibitor list. Use the brief to find a credible wedge before the meeting.",
+  "competitiveContext": [
+    "Slalom",
+    "Accenture AI&Analytics",
+    "in-house build (their default)"
+  ],
+  "description": "A Deltek partner providing business consulting and technology solutions to help professional services firms optimize their Deltek software."
+}

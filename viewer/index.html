@@ -1,0 +1,1628 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="theme-color" content="#0b1020" />
+  <title>Arvaya Brief</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    /*
+     * iPad-optimized Arvaya Brief viewer
+     * ----------------------------------
+     * Single-file, no build step. Loads /api/briefs (or a static
+     * brief.json via ?file=) and renders the PublishedBrief shape into
+     * a CTO-friendly dashboard layout. Touch-first: large tap targets,
+     * pull-to-refresh-friendly sticky header, smooth scroll, no hover
+     * dependencies.
+     */
+    :root {
+      --bg: #0b1020;
+      --bg-elev: #131a2e;
+      --bg-card: #1a2340;
+      --bg-soft: #1f2a4d;
+      --text: #e6ebf5;
+      --text-dim: #9aa6c2;
+      --text-faint: #6c7896;
+      --accent: #6ea8ff;
+      --accent-soft: #2a3a66;
+      --good: #4ade80;
+      --warn: #facc15;
+      --bad: #f87171;
+      --champion: #4ade80;
+      --tech-eval: #6ea8ff;
+      --econ: #facc15;
+      --blocker: #f87171;
+      --unknown: #9aa6c2;
+      --radius: 18px;
+      --radius-sm: 12px;
+      --pad: 22px;
+    }
+
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #f3f6fb;
+        --bg-elev: #ffffff;
+        --bg-card: #ffffff;
+        --bg-soft: #eef2f9;
+        --text: #0f172a;
+        --text-dim: #475569;
+        --text-faint: #94a3b8;
+        --accent: #2563eb;
+        --accent-soft: #dbeafe;
+      }
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+      font-size: 16px;
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+      -webkit-tap-highlight-color: transparent;
+      overflow-x: hidden;
+    }
+
+    /* Safe area handling for notched iPad / iPhone */
+    body {
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    /* App layout: sidebar list of briefs + main detail panel */
+    .app {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      min-height: 100vh;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 900px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+      .sidebar.open { display: block; }
+    }
+
+    /* ---------------- Sidebar ---------------- */
+    .sidebar {
+      background: var(--bg-elev);
+      border-right: 1px solid rgba(255,255,255,0.06);
+      padding: 18px 14px;
+      overflow-y: auto;
+      position: sticky;
+      top: 0;
+      max-height: 100vh;
+    }
+
+    .brand {
+      display: flex; align-items: center; gap: 10px;
+      padding: 6px 8px 18px 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      margin-bottom: 14px;
+    }
+    .brand-mark {
+      width: 32px; height: 32px;
+      border-radius: 9px;
+      background: linear-gradient(135deg, var(--accent), #b388ff);
+      display: grid; place-items: center;
+      color: white; font-weight: 800;
+      font-size: 14px;
+    }
+    .brand-title { font-weight: 700; font-size: 17px; letter-spacing: -0.01em; }
+    .brand-sub   { font-size: 12px; color: var(--text-faint); margin-top: 2px; }
+
+    .search {
+      width: 100%;
+      background: var(--bg-soft);
+      border: 1px solid transparent;
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      color: var(--text);
+      font-size: 15px;
+      font-family: inherit;
+      margin-bottom: 12px;
+    }
+    .search:focus { outline: none; border-color: var(--accent); }
+
+    .new-btn {
+      width: 100%;
+      background: linear-gradient(135deg, var(--accent), #8a5cff);
+      color: white;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 11px;
+      font-size: 15px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      margin-bottom: 14px;
+    }
+    .new-btn:active { transform: scale(0.98); }
+
+    .list-empty {
+      color: var(--text-faint);
+      font-size: 13px;
+      padding: 14px 8px;
+      text-align: center;
+    }
+
+    .brief-row {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 12px 12px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      margin-bottom: 4px;
+      border: 1px solid transparent;
+      transition: background 100ms, border-color 100ms;
+    }
+    .brief-row:active,
+    .brief-row.active {
+      background: var(--accent-soft);
+      border-color: rgba(110, 168, 255, 0.4);
+    }
+    .brief-row .company { font-weight: 600; font-size: 15px; }
+    .brief-row .meta { font-size: 12px; color: var(--text-faint); display: flex; gap: 8px; flex-wrap: wrap; }
+    .quality-chip {
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+    .quality-rich { background: rgba(74, 222, 128, 0.16); color: var(--good); }
+    .quality-moderate { background: rgba(110, 168, 255, 0.16); color: var(--accent); }
+    .quality-thin { background: rgba(250, 204, 21, 0.16); color: var(--warn); }
+    .quality-low { background: rgba(248, 113, 113, 0.16); color: var(--bad); }
+
+    /* ---------------- Main panel ---------------- */
+    .main {
+      padding: 28px var(--pad) 60px;
+      min-width: 0; /* keeps grid from blowing out */
+    }
+    @media (max-width: 900px) {
+      .main { padding: 20px 16px 60px; }
+    }
+
+    .header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 6px;
+    }
+    .header-left { flex: 1; min-width: 0; }
+    .header h1 {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin: 0 0 6px 0;
+      line-height: 1.1;
+    }
+    .subtitle {
+      color: var(--text-dim);
+      font-size: 14px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .subtitle span { display: inline-flex; align-items: center; gap: 5px; }
+    .dot { width: 4px; height: 4px; background: var(--text-faint); border-radius: 50%; }
+
+    .header-actions { display: flex; gap: 8px; flex-shrink: 0; }
+    .icon-btn {
+      background: var(--bg-soft);
+      border: 1px solid rgba(255,255,255,0.06);
+      color: var(--text);
+      width: 42px; height: 42px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 18px;
+      display: grid; place-items: center;
+    }
+    .icon-btn:active { transform: scale(0.95); }
+
+    .banner {
+      margin-top: 14px;
+      padding: 14px 16px;
+      border-radius: var(--radius-sm);
+      background: rgba(250, 204, 21, 0.1);
+      border: 1px solid rgba(250, 204, 21, 0.3);
+      color: var(--warn);
+      font-size: 14px;
+    }
+    .banner.bad {
+      background: rgba(248, 113, 113, 0.1);
+      border-color: rgba(248, 113, 113, 0.3);
+      color: var(--bad);
+    }
+
+    /* Card grid */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 14px;
+      margin: 22px 0;
+    }
+    .card {
+      background: var(--bg-card);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: var(--radius);
+      padding: 18px;
+    }
+    .card-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-faint);
+      margin-bottom: 6px;
+    }
+    .card-value {
+      font-size: 16px;
+      line-height: 1.45;
+    }
+    .card-value .num {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+
+    /* Section */
+    section.brief-section {
+      background: var(--bg-card);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: var(--radius);
+      padding: 22px;
+      margin: 18px 0;
+    }
+    section.brief-section h2 {
+      font-size: 19px;
+      font-weight: 700;
+      margin: 0 0 14px 0;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      letter-spacing: -0.01em;
+    }
+    .h2-emoji { font-size: 21px; }
+
+    .tldr-list { list-style: none; padding: 0; margin: 0; }
+    .tldr-list li {
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      display: flex;
+      gap: 12px;
+    }
+    .tldr-list li:last-child { border-bottom: none; }
+    .tldr-list li::before {
+      content: "→";
+      color: var(--accent);
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    .call-objective {
+      font-size: 17px;
+      font-weight: 500;
+      line-height: 1.5;
+      padding: 16px 18px;
+      background: var(--accent-soft);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      color: var(--text);
+    }
+
+    /* Buying committee cards */
+    .committee {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 10px;
+    }
+    .person {
+      background: var(--bg-soft);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      border-left: 3px solid var(--unknown);
+    }
+    .person.role-champion { border-left-color: var(--champion); }
+    .person.role-technical_evaluator { border-left-color: var(--tech-eval); }
+    .person.role-economic_buyer { border-left-color: var(--econ); }
+    .person.role-blocker { border-left-color: var(--blocker); }
+
+    .person-name { font-weight: 600; font-size: 15px; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+    .person-title { color: var(--text-dim); font-size: 13px; margin-top: 2px; }
+    .person-rationale { color: var(--text); font-size: 13px; margin-top: 8px; line-height: 1.5; }
+    .role-tag {
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .role-tag.role-champion { background: rgba(74,222,128,0.18); color: var(--champion); }
+    .role-tag.role-technical_evaluator { background: rgba(110,168,255,0.18); color: var(--tech-eval); }
+    .role-tag.role-economic_buyer { background: rgba(250,204,21,0.18); color: var(--econ); }
+    .role-tag.role-blocker { background: rgba(248,113,113,0.18); color: var(--blocker); }
+    .role-tag.role-unknown { background: rgba(154,166,194,0.18); color: var(--unknown); }
+
+    .li-link {
+      font-size: 11px;
+      color: var(--accent);
+      text-decoration: none;
+      margin-left: 8px;
+      flex-shrink: 0;
+    }
+
+    /* News cards */
+    .news-list { display: flex; flex-direction: column; gap: 10px; }
+    .news-item {
+      background: var(--bg-soft);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+      border: 1px solid transparent;
+    }
+    .news-item:active { border-color: var(--accent); }
+    .news-meta {
+      display: flex;
+      gap: 10px;
+      font-size: 11px;
+      color: var(--text-faint);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
+    }
+    .news-headline { font-weight: 600; font-size: 15px; line-height: 1.35; margin-bottom: 5px; }
+    .news-summary { color: var(--text-dim); font-size: 13px; line-height: 1.5; }
+
+    /* Generic claim items */
+    .claim-list { list-style: none; padding: 0; margin: 0; }
+    .claim-item {
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      display: flex;
+      gap: 10px;
+    }
+    .claim-item:last-child { border-bottom: none; }
+    .claim-bullet {
+      color: var(--accent);
+      flex-shrink: 0;
+      font-weight: 600;
+      width: 22px;
+    }
+    .claim-body { flex: 1; min-width: 0; }
+    .claim-label { font-weight: 600; margin-right: 4px; }
+    .src-pill {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      background: var(--bg-soft);
+      color: var(--text-faint);
+      padding: 2px 7px;
+      border-radius: 6px;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+
+    /* Objections */
+    .obj-item {
+      background: var(--bg-soft);
+      padding: 14px 16px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 10px;
+    }
+    .obj-q { font-weight: 600; margin-bottom: 6px; }
+    .obj-q::before { content: "They might say: "; color: var(--text-faint); font-weight: 400; }
+    .obj-a { color: var(--text-dim); font-size: 14px; }
+    .obj-a::before { content: "You respond: "; color: var(--accent); font-weight: 600; }
+
+    /* Risks */
+    .risk-item {
+      padding: 14px 16px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 8px;
+      background: var(--bg-soft);
+      border-left: 3px solid var(--unknown);
+    }
+    .risk-item.sev-low    { border-left-color: var(--good); }
+    .risk-item.sev-medium { border-left-color: var(--warn); }
+    .risk-item.sev-high   { border-left-color: var(--bad); }
+    .risk-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .risk-summary { font-weight: 600; font-size: 14px; }
+    .sev-tag {
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .sev-tag.sev-low { background: rgba(74,222,128,0.18); color: var(--good); }
+    .sev-tag.sev-medium { background: rgba(250,204,21,0.18); color: var(--warn); }
+    .sev-tag.sev-high { background: rgba(248,113,113,0.18); color: var(--bad); }
+    .risk-detail { color: var(--text-dim); font-size: 13px; margin-top: 6px; line-height: 1.5; }
+
+    /* Sources */
+    .sources-list { display: flex; flex-direction: column; gap: 6px; }
+    .source-line {
+      display: flex;
+      gap: 10px;
+      align-items: baseline;
+      font-size: 13px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: var(--bg-soft);
+    }
+    .source-id {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text-faint);
+      flex-shrink: 0;
+    }
+    .source-line a { color: var(--text); text-decoration: none; }
+    .source-line a:active { color: var(--accent); }
+    .source-date { color: var(--text-faint); font-size: 11px; flex-shrink: 0; margin-left: auto; }
+
+    /* New-brief modal */
+    .modal-bg {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.55);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 20px;
+    }
+    .modal-bg.open { display: flex; }
+    .modal {
+      background: var(--bg-elev);
+      border-radius: var(--radius);
+      padding: 24px;
+      width: 100%;
+      max-width: 520px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal h3 { margin: 0 0 14px 0; font-size: 22px; font-weight: 700; }
+    .modal label { display: block; font-size: 13px; color: var(--text-dim); margin: 12px 0 4px; font-weight: 500; }
+    .modal input, .modal select, .modal textarea {
+      width: 100%;
+      background: var(--bg-soft);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 15px;
+      font-family: inherit;
+    }
+    .modal textarea { min-height: 78px; resize: vertical; }
+    .modal-actions { display: flex; gap: 8px; margin-top: 18px; justify-content: flex-end; }
+    .btn {
+      padding: 10px 18px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: var(--bg-soft);
+      color: var(--text);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .btn.primary {
+      background: linear-gradient(135deg, var(--accent), #8a5cff);
+      color: white;
+      border-color: transparent;
+    }
+    .btn:active { transform: scale(0.97); }
+
+    /* Progress stream */
+    .progress {
+      background: var(--bg-soft);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      margin-top: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--text-dim);
+      max-height: 220px;
+      overflow-y: auto;
+    }
+    .progress .line { padding: 2px 0; }
+    .progress .line.done { color: var(--good); }
+    .progress .line.fail { color: var(--bad); }
+
+    /* Empty state */
+    .empty {
+      display: grid;
+      place-items: center;
+      min-height: 60vh;
+      color: var(--text-dim);
+      text-align: center;
+      padding: 20px;
+    }
+    .empty h2 { font-size: 22px; font-weight: 600; margin: 0 0 8px; color: var(--text); }
+    .empty p { font-size: 15px; max-width: 380px; }
+    .empty .empty-cta { margin-top: 16px; display: inline-flex; gap: 8px; }
+
+    /* Sidebar section headers (Today / This Week / Upcoming / etc.) */
+    .group-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-faint);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 16px 10px 6px;
+      border-top: 1px solid rgba(255,255,255,0.04);
+      margin-top: 4px;
+    }
+    .group-head:first-of-type { border-top: none; margin-top: 0; padding-top: 8px; }
+    .group-head .group-count {
+      background: var(--bg-soft);
+      color: var(--text-faint);
+      padding: 1px 7px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    /* Status indicator on a pipeline row (no brief yet) */
+    .brief-row .status {
+      font-size: 10px;
+      padding: 1px 6px;
+      border-radius: 5px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .status-fresh   { background: rgba(74, 222, 128, 0.16); color: var(--good); }
+    .status-stale   { background: rgba(250, 204, 21, 0.16); color: var(--warn); }
+    .status-none    { background: var(--bg-soft); color: var(--text-faint); }
+    .status-running { background: rgba(110, 168, 255, 0.22); color: var(--accent); }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+    .status-running { animation: pulse 1.4s ease-in-out infinite; }
+
+    /* Skeleton loaders */
+    @keyframes shimmer {
+      0% { background-position: -240px 0; }
+      100% { background-position: 240px 0; }
+    }
+    .skeleton {
+      background: linear-gradient(90deg, var(--bg-soft) 0%, var(--bg-card) 50%, var(--bg-soft) 100%);
+      background-size: 480px 100%;
+      animation: shimmer 1.6s linear infinite;
+      border-radius: 8px;
+    }
+    .skel-line { height: 14px; margin: 8px 0; }
+    .skel-line.short { width: 40%; }
+    .skel-line.med   { width: 70%; }
+    .skel-card {
+      height: 96px;
+      border-radius: var(--radius);
+    }
+
+    /* Tech-stack chips */
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .chip {
+      background: var(--bg-soft);
+      color: var(--text);
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-weight: 500;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    .chip.accent {
+      background: var(--accent-soft);
+      color: var(--accent);
+      border-color: rgba(110, 168, 255, 0.3);
+    }
+
+    /* Funding strip — bold financials card above the snapshot */
+    .funding-strip {
+      display: flex;
+      gap: 18px;
+      flex-wrap: wrap;
+      background: linear-gradient(135deg, rgba(110, 168, 255, 0.08), rgba(138, 92, 255, 0.06));
+      border: 1px solid rgba(110, 168, 255, 0.15);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      margin: 18px 0;
+    }
+    .funding-strip .stat { display: flex; flex-direction: column; gap: 2px; min-width: 110px; }
+    .funding-strip .stat-label {
+      font-size: 10px; font-weight: 700; color: var(--text-faint);
+      text-transform: uppercase; letter-spacing: 0.08em;
+    }
+    .funding-strip .stat-value {
+      font-size: 19px; font-weight: 700; color: var(--text); letter-spacing: -0.01em;
+    }
+    .funding-strip .stat-value.sub { font-size: 14px; font-weight: 600; color: var(--text-dim); }
+
+    /* Trust marker — green ✓ on items with verified evidenceQuote */
+    .trust-mark {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: rgba(74, 222, 128, 0.18);
+      color: var(--good);
+      font-size: 10px;
+      margin-left: 6px;
+      vertical-align: middle;
+      font-weight: 700;
+    }
+    .trust-mark[title]:hover { cursor: help; }
+
+    /* Tap-to-copy button on icebreakers + talking points */
+    .copy-btn {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.08);
+      color: var(--text-faint);
+      width: 28px; height: 28px;
+      border-radius: 7px;
+      cursor: pointer;
+      font-size: 13px;
+      flex-shrink: 0;
+      transition: all 100ms;
+      font-family: inherit;
+    }
+    .copy-btn:active, .copy-btn.copied {
+      background: rgba(74, 222, 128, 0.18);
+      color: var(--good);
+      border-color: rgba(74, 222, 128, 0.4);
+    }
+    .claim-item.copyable { align-items: flex-start; }
+    .claim-item.copyable .claim-body { padding-right: 4px; }
+
+    /* Generate-now CTA row inside the detail panel for not-yet-briefed leads */
+    .generate-card {
+      background: var(--bg-card);
+      border: 1px dashed rgba(110, 168, 255, 0.35);
+      border-radius: var(--radius);
+      padding: 28px;
+      text-align: center;
+      max-width: 560px;
+      margin: 40px auto;
+    }
+    .generate-card h3 { font-size: 19px; margin: 0 0 6px; }
+    .generate-card p { color: var(--text-dim); font-size: 14px; line-height: 1.5; }
+    .generate-card .description {
+      font-style: italic;
+      color: var(--text-faint);
+      font-size: 13px;
+      margin: 14px 0 18px;
+      max-width: 460px;
+      margin-left: auto; margin-right: auto;
+    }
+
+    /* iPad: tappable region 44pt+ — make sure brief-rows are at least that tall */
+    @media (pointer: coarse) {
+      .brief-row { padding: 14px 12px; min-height: 56px; }
+      .icon-btn { width: 48px; height: 48px; }
+      .copy-btn { width: 36px; height: 36px; font-size: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-mark">A</div>
+        <div>
+          <div class="brand-title">Arvaya</div>
+          <div class="brand-sub">Pre-meeting briefs</div>
+        </div>
+      </div>
+      <input type="search" class="search" id="search" placeholder="Search briefs…" />
+      <button class="new-btn" id="newBriefBtn">＋ New brief</button>
+      <div id="briefList"></div>
+    </aside>
+
+    <main class="main" id="main">
+      <div class="empty" id="empty">
+        <div>
+          <h2>Select a brief</h2>
+          <p>Pick one from the sidebar, or tap <b>＋ New brief</b> to generate a fresh discovery prep on a prospect.</p>
+        </div>
+      </div>
+      <div id="detail" style="display:none;"></div>
+    </main>
+  </div>
+
+  <!-- New brief modal -->
+  <div class="modal-bg" id="modalBg">
+    <div class="modal" role="dialog" aria-modal="true">
+      <h3>New brief</h3>
+      <label for="m_company">Company</label>
+      <input id="m_company" placeholder="Northwind Logistics" />
+      <label for="m_website">Website</label>
+      <input id="m_website" placeholder="https://example.com" />
+      <label for="m_prospectName">Prospect name (optional)</label>
+      <input id="m_prospectName" placeholder="Pat Lee" />
+      <label for="m_prospectTitle">Prospect title (optional)</label>
+      <input id="m_prospectTitle" placeholder="VP Data" />
+      <label for="m_meetingAt">Meeting at (ISO 8601, optional)</label>
+      <input id="m_meetingAt" type="datetime-local" />
+      <label for="m_recency">News recency</label>
+      <select id="m_recency">
+        <option value="month" selected>Last 30 days (default)</option>
+        <option value="week">Last 7 days</option>
+        <option value="day">Last 24 hours</option>
+      </select>
+      <label for="m_callObjective">Call objective (optional)</label>
+      <textarea id="m_callObjective" placeholder="What do you want out of this meeting?"></textarea>
+      <div class="progress" id="progress" style="display:none;"></div>
+      <div class="modal-actions">
+        <button class="btn" id="cancelBtn">Cancel</button>
+        <button class="btn primary" id="submitBtn">Generate</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  // ============================================================
+  // Arvaya brief viewer — single-file client.
+  // Talks to /api/leads + /api/briefs (Node server in src/server.ts).
+  // Pipeline-first: every known company shows in the sidebar grouped
+  // by meeting date. Briefs already generated render normally; leads
+  // without a brief surface a "Generate now" CTA in the detail panel.
+  // ============================================================
+
+  const API = ""; // same origin
+  const els = {
+    list: document.getElementById("briefList"),
+    detail: document.getElementById("detail"),
+    empty: document.getElementById("empty"),
+    search: document.getElementById("search"),
+    newBtn: document.getElementById("newBriefBtn"),
+    modalBg: document.getElementById("modalBg"),
+    cancelBtn: document.getElementById("cancelBtn"),
+    submitBtn: document.getElementById("submitBtn"),
+    progress: document.getElementById("progress"),
+  };
+
+  // The sidebar is union-of-leads-and-briefs. Each row carries either:
+  //   - { kind: "brief", company, runId, path, ... }   ← brief exists
+  //   - { kind: "lead", company, leadFile, ... }       ← pipeline entry, no brief yet
+  // selection is by stable key: "brief:<path>" or "lead:<file>".
+  let rows = [];
+  let activeKey = null;
+  let activeBrief = null;
+  let currentEventSource = null;
+  let inFlightLead = null; // company name currently being generated, surfaced in sidebar status
+
+  function fmtDate(iso) {
+    if (!iso) return "";
+    try {
+      const d = new Date(iso);
+      return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    } catch { return iso; }
+  }
+
+  function fmtTime(iso) {
+    if (!iso) return "";
+    try {
+      const d = new Date(iso);
+      return d.toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+    } catch { return iso; }
+  }
+
+  function daysAgo(iso) {
+    if (!iso) return null;
+    try {
+      const ms = Date.now() - new Date(iso).getTime();
+      const days = Math.floor(ms / 86400000);
+      if (days < 1) return "today";
+      if (days === 1) return "1 day ago";
+      return days + " days ago";
+    } catch { return null; }
+  }
+
+  // ============================================================
+  // Loading & rendering
+  // ============================================================
+
+  async function loadIndex() {
+    // ?file=... still supported for static / offline use.
+    const params = new URLSearchParams(location.search);
+    const file = params.get("file");
+    if (file) {
+      try {
+        const brief = await fetch(file).then(r => r.json());
+        rows = [{ kind: "brief", _inline: brief, path: file, ...briefMetaToRow(brief, file) }];
+        renderList();
+        selectKey("brief:" + file);
+        return;
+      } catch (e) {
+        showError("Could not load " + file + ": " + e.message);
+        return;
+      }
+    }
+
+    try {
+      // Fetch BOTH leads and briefs in parallel — leads provide the
+      // pipeline (every known company), briefs decorate them.
+      const [leadsRes, briefsRes] = await Promise.all([
+        fetch(API + "/api/leads"),
+        fetch(API + "/api/briefs"),
+      ]);
+      if (!leadsRes.ok || !briefsRes.ok) throw new Error("HTTP " + (leadsRes.status || briefsRes.status));
+      const leads = await leadsRes.json();
+      const briefs = await briefsRes.json();
+      // Slug-index briefs so we can attach the newest one to each lead.
+      const briefBySlug = new Map();
+      for (const b of briefs) {
+        const slug = (b.path || "").split("/")[0];
+        if (slug && !briefBySlug.has(slug)) briefBySlug.set(slug, b);
+      }
+      // Build merged rows from leads first (canonical pipeline order).
+      rows = leads.map(l => {
+        const b = briefBySlug.get(l.slug);
+        if (b) {
+          briefBySlug.delete(l.slug);
+          return {
+            kind: "brief",
+            company: l.company,
+            runId: b.runId,
+            path: b.path,
+            generatedAt: b.generatedAt,
+            meetingDate: l.meetingAt || b.meetingDate,
+            signalQuality: b.signalQuality,
+            passedVerification: b.passedVerification,
+            leadFile: l.leadFile,
+            description: l.description,
+            prospectTitle: l.prospectTitle,
+            sponsorLevel: l.sponsorLevel,
+            slug: l.slug,
+          };
+        }
+        return {
+          kind: "lead",
+          company: l.company,
+          leadFile: l.leadFile,
+          meetingDate: l.meetingAt,
+          description: l.description,
+          prospectTitle: l.prospectTitle,
+          sponsorLevel: l.sponsorLevel,
+          slug: l.slug,
+        };
+      });
+      // Append any briefs that have no matching lead (e.g. ad-hoc runs).
+      for (const b of briefBySlug.values()) {
+        rows.push({
+          kind: "brief",
+          company: b.company,
+          runId: b.runId,
+          path: b.path,
+          generatedAt: b.generatedAt,
+          meetingDate: b.meetingDate,
+          signalQuality: b.signalQuality,
+          passedVerification: b.passedVerification,
+          slug: (b.path || "").split("/")[0],
+        });
+      }
+
+      renderList();
+      // Honour deep-link via hash.
+      const hashKey = parseHash();
+      if (hashKey) selectKey(hashKey);
+      else if (rows.length === 0) showEmpty();
+    } catch (e) {
+      els.list.innerHTML = '<div class="list-empty">No backend reachable. Start the server with <code>npm run serve</code> or open <code>?file=brief.json</code>.</div>';
+    }
+  }
+
+  function briefMetaToRow(brief, path) {
+    return {
+      company: brief.meta?.company || "Unknown",
+      runId: brief.meta?.runId || path,
+      generatedAt: brief.meta?.generatedAt,
+      meetingDate: brief.meta?.meetingDate,
+      signalQuality: brief.meta?.signalQuality || "moderate",
+      passedVerification: brief.meta?.passedVerification ?? true,
+      slug: (path || "").split("/")[0],
+    };
+  }
+
+  // ----- Sidebar grouping by meeting date -----
+
+  function rowKey(r) {
+    return r.kind === "brief" ? "brief:" + r.path : "lead:" + r.leadFile;
+  }
+
+  function groupForRow(r) {
+    if (!r.meetingDate) return "Unscheduled";
+    const d = new Date(r.meetingDate);
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const tomorrow = new Date(today.getTime() + 86400000);
+    const inOneWeek = new Date(today.getTime() + 7 * 86400000);
+    if (d < today) return "Past";
+    if (d < tomorrow) return "Today";
+    if (d < inOneWeek) return "This week";
+    return "Upcoming";
+  }
+
+  const GROUP_ORDER = ["Today", "This week", "Upcoming", "Unscheduled", "Past"];
+
+  function renderList() {
+    const q = (els.search.value || "").toLowerCase();
+    const filtered = rows.filter(r =>
+      !q || r.company.toLowerCase().includes(q) || (r.description || "").toLowerCase().includes(q) || (r.prospectTitle || "").toLowerCase().includes(q)
+    );
+    if (filtered.length === 0) {
+      els.list.innerHTML = '<div class="list-empty">Nothing matches “' + escape(q) + '”.</div>';
+      return;
+    }
+
+    // Bucket rows by group, preserving the sort order coming from the API
+    // within each group.
+    const buckets = new Map();
+    for (const g of GROUP_ORDER) buckets.set(g, []);
+    for (const r of filtered) {
+      const g = groupForRow(r);
+      if (!buckets.has(g)) buckets.set(g, []);
+      buckets.get(g).push(r);
+    }
+
+    let html = "";
+    for (const g of GROUP_ORDER) {
+      const list = buckets.get(g) || [];
+      if (list.length === 0) continue;
+      html += `<div class="group-head">${g}<span class="group-count">${list.length}</span></div>`;
+      for (const r of list) {
+        const key = rowKey(r);
+        html += renderRow(r, key === activeKey);
+      }
+    }
+
+    els.list.innerHTML = html;
+    els.list.querySelectorAll(".brief-row").forEach(el => {
+      el.addEventListener("click", () => selectKey(el.dataset.key));
+    });
+  }
+
+  function renderRow(r, active) {
+    const key = rowKey(r);
+    const meta = [];
+    if (r.meetingDate) meta.push(`<span>${escape(fmtDate(r.meetingDate))}</span>`);
+    if (r.kind === "brief") {
+      meta.push(`<span class="quality-chip quality-${r.signalQuality}">${escape(r.signalQuality || "moderate")}</span>`);
+      const age = ageDays(r.generatedAt);
+      if (age != null && age > 7) {
+        meta.push(`<span class="status status-stale">${age}d old</span>`);
+      } else {
+        meta.push(`<span class="status status-fresh">brief ready</span>`);
+      }
+    } else if (r.kind === "lead") {
+      if (inFlightLead === r.company) {
+        meta.push(`<span class="status status-running">generating…</span>`);
+      } else {
+        meta.push(`<span class="status status-none">no brief</span>`);
+      }
+    }
+    return `
+      <div class="brief-row ${active ? 'active' : ''}" data-key="${escape(key)}">
+        <div class="company">${escape(r.company)}</div>
+        <div class="meta">${meta.join("")}</div>
+      </div>
+    `;
+  }
+
+  // ----- Selection -----
+
+  function selectKey(key) {
+    activeKey = key;
+    location.hash = key;
+    renderList();
+    const r = rows.find(x => rowKey(x) === key);
+    if (!r) return showEmpty();
+    if (r.kind === "brief") return selectBrief(r);
+    if (r.kind === "lead")  return selectLead(r);
+  }
+
+  function parseHash() {
+    const h = location.hash.replace(/^#/, "");
+    if (!h) return null;
+    return decodeURIComponent(h);
+  }
+
+  async function selectBrief(r) {
+    els.empty.style.display = "none";
+    els.detail.style.display = "block";
+    showSkeleton();
+    try {
+      const brief = r._inline || await fetch(API + "/api/briefs/" + encodeURIComponent(r.path)).then(x => x.json());
+      activeBrief = brief;
+      renderDetail(brief, r);
+    } catch (e) {
+      els.detail.innerHTML = '<div class="empty"><div><h2>Failed to load</h2><p>' + escape(e.message) + '</p></div></div>';
+    }
+  }
+
+  async function selectLead(r) {
+    els.empty.style.display = "none";
+    els.detail.style.display = "block";
+    // Lightweight "Generate now" panel — no fetch needed; lead data is on the row.
+    const meeting = r.meetingDate ? fmtTime(r.meetingDate) : "No meeting scheduled";
+    const sponsorBadge = r.sponsorLevel ? `<span class="quality-chip quality-moderate">${escape(r.sponsorLevel)}</span>` : "";
+    els.detail.innerHTML = `
+      <div class="header">
+        <div class="header-left">
+          <h1>${escape(r.company)}</h1>
+          <div class="subtitle">
+            <span>🗓️ ${escape(meeting)}</span>
+            ${r.prospectTitle ? `<span class="dot"></span><span>👤 ${escape(r.prospectTitle)}</span>` : ""}
+            ${sponsorBadge ? `<span class="dot"></span>${sponsorBadge}` : ""}
+          </div>
+        </div>
+      </div>
+      <div class="generate-card">
+        <h3>No brief yet for ${escape(r.company)}</h3>
+        <p>This company is in the pipeline but hasn't been researched. Generating takes ~1–3 minutes and runs through the full five-agent pipeline.</p>
+        ${r.description ? `<div class="description">“${escape(r.description)}”</div>` : ""}
+        <div class="empty-cta">
+          <button class="btn primary" id="genFromLead">＋ Generate brief</button>
+        </div>
+      </div>
+    `;
+    document.getElementById("genFromLead")?.addEventListener("click", () => openModalForLead(r));
+  }
+
+  function showEmpty() {
+    els.empty.style.display = "grid";
+    els.detail.style.display = "none";
+  }
+
+  function showError(msg) {
+    els.detail.style.display = "block";
+    els.empty.style.display = "none";
+    els.detail.innerHTML = '<div class="empty"><div><h2>Error</h2><p>' + escape(msg) + '</p></div></div>';
+  }
+
+  function showSkeleton() {
+    els.detail.innerHTML = `
+      <div class="header">
+        <div class="header-left">
+          <div class="skeleton skel-line" style="width: 50%; height: 32px; margin-bottom: 10px;"></div>
+          <div class="skeleton skel-line med"></div>
+        </div>
+      </div>
+      <div class="cards">
+        <div class="skeleton skel-card"></div>
+        <div class="skeleton skel-card"></div>
+        <div class="skeleton skel-card"></div>
+      </div>
+      <section class="brief-section">
+        <div class="skeleton skel-line short"></div>
+        <div class="skeleton skel-line"></div>
+        <div class="skeleton skel-line med"></div>
+        <div class="skeleton skel-line med"></div>
+      </section>
+    `;
+  }
+
+  function ageDays(iso) {
+    if (!iso) return null;
+    try { return Math.floor((Date.now() - new Date(iso).getTime()) / 86400000); }
+    catch { return null; }
+  }
+
+  // ============================================================
+  // Detail renderer — the heart of the iPad view
+  // ============================================================
+
+  function renderDetail(brief, sidebarRow) {
+    const meta = brief.meta || {};
+    const freshness = meta.freshness ? daysAgo(meta.freshness) : null;
+    const generated = daysAgo(meta.generatedAt);
+
+    // Parse Apollo source (if present) for funding + tech stack chips.
+    const apollo = parseApolloSource(brief);
+
+    let html = "";
+
+    // Header
+    html += `
+      <div class="header">
+        <div class="header-left">
+          <h1>${escape(meta.company || "Brief")}</h1>
+          <div class="subtitle">
+            ${meta.meetingDate ? `<span>📅 ${escape(fmtTime(meta.meetingDate))}</span><span class="dot"></span>` : ""}
+            ${meta.ae ? `<span>👤 AE: ${escape(meta.ae)}</span><span class="dot"></span>` : ""}
+            ${meta.domain ? `<span>🌐 <a href="https://${escape(meta.domain)}" target="_blank" rel="noopener" style="color:inherit">${escape(meta.domain)}</a></span><span class="dot"></span>` : ""}
+            <span><span class="quality-chip quality-${meta.signalQuality}">${meta.signalQuality} signal</span></span>
+          </div>
+          <div class="subtitle" style="margin-top:4px;">
+            ${generated ? `<span>🕒 Brief generated ${generated}</span>` : ""}
+            ${freshness ? `<span class="dot"></span><span>📰 Newest source ${freshness}</span>` : ""}
+          </div>
+        </div>
+        <div class="header-actions">
+          <button class="icon-btn" id="refreshBtn" title="Refresh">↻</button>
+        </div>
+      </div>
+    `;
+
+    // Banner
+    if (meta.confidenceBanner) {
+      html += `<div class="banner">${escape(meta.confidenceBanner)}</div>`;
+    } else if (meta.passedVerification === false) {
+      html += `<div class="banner bad">⚠️ This brief did not fully pass automated fact verification — review carefully before the call.</div>`;
+    }
+
+    // Funding / scale strip — CTO-relevant headline numbers above everything else
+    if (apollo) {
+      const stats = [];
+      if (apollo.employees) stats.push({ label: "Headcount", value: apollo.employees.toLocaleString("en-US") });
+      if (apollo.funding) stats.push({ label: "Total funding", value: apollo.funding });
+      if (apollo.stage) stats.push({ label: "Last round", value: apollo.stage, sub: apollo.stageDate });
+      if (apollo.founded) stats.push({ label: "Founded", value: String(apollo.founded) });
+      if (apollo.industry) stats.push({ label: "Industry", value: apollo.industry, sub: true });
+      if (stats.length) {
+        html += `<div class="funding-strip">`;
+        for (const s of stats) {
+          const valClass = s.sub === true ? "stat-value sub" : "stat-value";
+          html += `<div class="stat"><div class="stat-label">${escape(s.label)}</div><div class="${valClass}">${escape(s.value)}${s.sub && s.sub !== true ? ` <span style="color:var(--text-faint);font-size:11px;font-weight:500;">(${escape(s.sub)})</span>` : ""}</div></div>`;
+        }
+        html += `</div>`;
+      }
+    }
+
+    // Executive snapshot cards
+    if (brief.executiveSnapshot?.length) {
+      html += `<div class="cards">`;
+      for (const item of brief.executiveSnapshot) {
+        html += `
+          <div class="card">
+            <div class="card-label">${escape(item.label || "")}</div>
+            <div class="card-value">${escape(item.text)}${sourceRefs(item.supportingSourceIds)}</div>
+          </div>
+        `;
+      }
+      html += `</div>`;
+    }
+
+    // Tech stack chips — separate section for visibility (CTO wants this front-and-center)
+    if (apollo?.techStack?.length) {
+      const chips = apollo.techStack.slice(0, 18).map(t => `<span class="chip">${escape(t)}</span>`).join("");
+      html += sectionWrap("🧱", "Tech stack",
+        `<div style="color:var(--text-dim);font-size:13px;margin-bottom:4px;">From Apollo's SaaS fingerprint.</div><div class="chips">${chips}</div>`
+      );
+    }
+
+    // Call objective
+    if (brief.callObjective) {
+      html += sectionWrap("🎯", "Call objective", `<div class="call-objective">${escape(brief.callObjective)}</div>`);
+    }
+
+    // TL;DR
+    if (brief.tldr?.length) {
+      html += sectionWrap("⚡", "TL;DR",
+        `<ul class="tldr-list">${brief.tldr.map(t => `<li>${escape(t)}</li>`).join("")}</ul>`
+      );
+    }
+
+    // Latest news
+    if (brief.latestNews?.length) {
+      const items = brief.latestNews.map(n => {
+        const dom = domainFromUrl(n.url);
+        return `
+          <a class="news-item" href="${escape(n.url)}" target="_blank" rel="noopener">
+            <div class="news-meta">
+              <span>${escape(dom)}</span>
+              ${n.publishedAt ? `<span>·</span><span>${escape(n.publishedAt)}</span>` : ""}
+            </div>
+            <div class="news-headline">${escape(n.headline)}</div>
+            <div class="news-summary">${escape(n.summary)}</div>
+          </a>
+        `;
+      }).join("");
+      html += sectionWrap("📰", "Latest news", `<div class="news-list">${items}</div>`);
+    }
+
+    // Buying committee
+    if (brief.buyingCommittee?.length) {
+      const cards = brief.buyingCommittee.map(p => `
+        <div class="person role-${escape(p.role || 'unknown')}">
+          <div class="person-name">
+            <span>${escape(p.name)}<span class="role-tag role-${escape(p.role || 'unknown')}">${escape(roleLabel(p.role))}</span></span>
+            ${p.linkedinUrl ? `<a class="li-link" href="${escape(p.linkedinUrl)}" target="_blank" rel="noopener">LinkedIn ↗</a>` : ""}
+          </div>
+          <div class="person-title">${escape(p.title || "")}</div>
+          <div class="person-rationale">${escape(p.rationale)}${sourceRefs(p.supportingSourceIds)}</div>
+        </div>
+      `).join("");
+      html += sectionWrap("👥", "Buying committee", `<div class="committee">${cards}</div>`);
+    }
+
+    // Attendee intel
+    if (brief.attendeeIntel?.length) {
+      const items = brief.attendeeIntel.map(a => `
+        <li class="claim-item">
+          <span class="claim-bullet">•</span>
+          <div class="claim-body"><span class="claim-label">${escape(a.name)}</span>(${escape(a.title)}) — ${escape(a.note)}${sourceRefs(a.supportingSourceIds)}</div>
+        </li>
+      `).join("");
+      html += sectionWrap("🪑", "In the room today", `<ul class="claim-list">${items}</ul>`);
+    }
+
+    // Icebreakers — copyable so Ryan can paste one straight into Slack
+    if (brief.icebreakers?.length) {
+      html += sectionWrap("❄️", "Icebreakers", renderClaims(brief.icebreakers, "copyable"));
+    } else if (lowSignal(brief)) {
+      html += sectionWrap("❄️", "Icebreakers", `<div style="color:var(--text-faint);font-size:14px;">Footprint too thin to surface specific icebreakers — open with discovery questions instead.</div>`);
+    }
+
+    // Value alignment hooks
+    if (brief.valueAlignmentHooks?.length) {
+      html += sectionWrap("🪝", "Value alignment hooks", renderClaims(brief.valueAlignmentHooks, "labeled"));
+    } else if (lowSignal(brief)) {
+      html += sectionWrap("🪝", "Value alignment hooks", `<div style="color:var(--text-faint);font-size:14px;">Insufficient public signal — keep this call discovery-flavoured rather than pitching specifics.</div>`);
+    }
+
+    // Talking points
+    if (brief.talkingPoints?.length) {
+      html += sectionWrap("💬", "Talking points", renderClaims(brief.talkingPoints, "numbered"));
+    }
+
+    // Potential red flags
+    if (brief.potentialRedFlags?.length) {
+      html += sectionWrap("🚩", "Potential red flags", renderClaims(brief.potentialRedFlags, "labeled"));
+    }
+
+    // Risks (separate from red flags — auditor's eye)
+    if (brief.risks?.length) {
+      const items = brief.risks.map(r => `
+        <div class="risk-item sev-${escape(r.severity)}">
+          <div class="risk-head">
+            <div class="risk-summary">${escape(r.summary)}</div>
+            <span class="sev-tag sev-${escape(r.severity)}">${escape(r.severity)} · ${escape(r.category)}</span>
+          </div>
+          <div class="risk-detail">${escape(r.detail)}${sourceRefs(r.supportingSourceIds)}</div>
+        </div>
+      `).join("");
+      html += sectionWrap("⚠️", "Risk audit", items);
+    }
+
+    // Objection predictions
+    if (brief.objectionPredictions?.length) {
+      const items = brief.objectionPredictions.map(o => `
+        <div class="obj-item">
+          <div class="obj-q">${escape(o.objection)}</div>
+          <div class="obj-a">${escape(o.suggestedResponse)}${sourceRefs(o.supportingSourceIds)}</div>
+        </div>
+      `).join("");
+      html += sectionWrap("🛡️", "Objection prep", items);
+    }
+
+    // Gov contracts
+    if (brief.govContracts?.length) {
+      const rows = brief.govContracts.map(c => `
+        <li class="claim-item">
+          <span class="claim-bullet">▸</span>
+          <div class="claim-body">
+            <span class="claim-label">${escape(c.agency)}</span> — ${escape(c.description)}
+            ${c.value ? ` <span class="src-pill">${escape(c.value)}</span>` : ""}
+            ${c.awardedAt ? ` <span class="src-pill">${escape(c.awardedAt)}</span>` : ""}
+            ${sourceRefs(c.supportingSourceIds)}
+          </div>
+        </li>
+      `).join("");
+      html += sectionWrap("🏛️", "Government contracts", `<ul class="claim-list">${rows}</ul>`);
+    }
+
+    // Prep notes (industry-specific)
+    if (brief.prepNotes?.length) {
+      html += sectionWrap("📋", "Prep notes", renderClaims(brief.prepNotes, "plain"));
+    }
+
+    // Sources
+    if (brief.sources?.length) {
+      const rows = brief.sources.map(s => `
+        <div class="source-line">
+          <span class="source-id">${escape(s.id)}</span>
+          <a href="${escape(s.url)}" target="_blank" rel="noopener">${escape(s.title || s.url)}</a>
+          ${s.publishedAt ? `<span class="source-date">${escape(s.publishedAt)}</span>` : ""}
+        </div>
+      `).join("");
+      html += sectionWrap("🔗", "Sources", `<div class="sources-list">${rows}</div>`);
+    }
+
+    els.detail.innerHTML = html;
+
+    // Refresh: if there's a sidebar row with a leadFile, regenerate from
+    // that lead (gives a fresh brief). Otherwise just reload the index.
+    document.getElementById("refreshBtn")?.addEventListener("click", () => {
+      if (sidebarRow?.leadFile) {
+        openModalForLead(sidebarRow, /* regenerate */ true);
+      } else {
+        loadIndex();
+      }
+    });
+
+    // Tap-to-copy on every .copy-btn.
+    els.detail.querySelectorAll(".copy-btn").forEach(btn => {
+      btn.addEventListener("click", async (ev) => {
+        ev.stopPropagation();
+        const text = btn.getAttribute("data-copy") || "";
+        try {
+          await navigator.clipboard.writeText(text);
+          btn.classList.add("copied");
+          btn.textContent = "✓";
+          setTimeout(() => { btn.classList.remove("copied"); btn.textContent = "⧉"; }, 1400);
+        } catch {
+          // Older iPadOS sometimes blocks clipboard from non-HTTPS pages —
+          // fall back to a transient toast-style alert.
+          btn.textContent = "⚠";
+          setTimeout(() => { btn.textContent = "⧉"; }, 1400);
+        }
+      });
+    });
+
+    // Scroll the freshly-loaded detail to the top.
+    document.querySelector(".main")?.scrollTo({ top: 0, behavior: "instant" });
+  }
+
+  function sectionWrap(emoji, title, body) {
+    return `
+      <section class="brief-section">
+        <h2><span class="h2-emoji">${emoji}</span>${escape(title)}</h2>
+        ${body}
+      </section>
+    `;
+  }
+
+  function renderClaims(items, style) {
+    // style: "labeled" | "numbered" | "copyable"
+    // "copyable" adds a tap-to-copy button — used for icebreakers + talking points.
+    const numbered = style === "numbered";
+    const copyable = style === "copyable" || style === "numbered";
+    return `<ul class="claim-list">${items.map((it, i) => {
+      const bullet = numbered ? (i + 1) : "•";
+      const trust = it.evidenceQuote
+        ? `<span class="trust-mark" title="Verified against source: “${escape((it.evidenceQuote || "").slice(0, 140))}”">✓</span>`
+        : "";
+      const labelHtml = it.label ? `<span class="claim-label">${escape(it.label)}:</span> ` : "";
+      const copyBtn = copyable ? `<button class="copy-btn" data-copy="${escape(it.text)}" title="Copy">⧉</button>` : "";
+      return `
+        <li class="claim-item ${copyable ? 'copyable' : ''}">
+          <span class="claim-bullet">${bullet}</span>
+          <div class="claim-body">${labelHtml}${escape(it.text)}${trust}${sourceRefs(it.supportingSourceIds)}</div>
+          ${copyBtn}
+        </li>
+      `;
+    }).join("")}</ul>`;
+  }
+
+  function sourceRefs(ids) {
+    if (!ids?.length) return "";
+    return " " + ids.map(id => `<span class="src-pill">${escape(id)}</span>`).join("");
+  }
+
+  function lowSignal(b) { return b.meta?.signalQuality === "low" || b.meta?.signalQuality === "thin"; }
+
+  /**
+   * Parse the Apollo source out of a brief's `sources` array. The Researcher
+   * puts a single `src-apollo-company` source with a JSON-encoded snippet
+   * carrying employee count, funding, tech stack, etc. — this surfaces those
+   * fields for the funding strip + tech-stack chips in the header.
+   */
+  function parseApolloSource(brief) {
+    const apolloSrc = (brief.sources || []).find(s => (s.id || "") === "src-apollo-company");
+    if (!apolloSrc) return null;
+    try {
+      const data = JSON.parse(apolloSrc.snippet);
+      return {
+        employees: data.estimatedEmployees,
+        funding: data.totalFundingFormatted,
+        stage: data.latestFundingStage,
+        stageDate: data.latestFundingDate,
+        founded: data.foundedYear,
+        industry: data.industry,
+        techStack: Array.isArray(data.techStack) ? data.techStack : [],
+      };
+    } catch {
+      // Not all snippets are JSON — fall through and surface nothing.
+      return null;
+    }
+  }
+
+  function roleLabel(role) {
+    return ({
+      champion: "Champion",
+      technical_evaluator: "Tech eval",
+      economic_buyer: "Economic buyer",
+      blocker: "Blocker",
+      unknown: "Unknown"
+    })[role] || "Unknown";
+  }
+
+  function domainFromUrl(u) {
+    try { return new URL(u).hostname.replace(/^www\./, ""); } catch { return ""; }
+  }
+
+  function escape(s) {
+    if (s == null) return "";
+    return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
+  }
+
+  // ============================================================
+  // New-brief modal + SSE progress
+  // ============================================================
+
+  els.newBtn.addEventListener("click", () => openModalForLead(null));
+  els.cancelBtn.addEventListener("click", () => {
+    els.modalBg.classList.remove("open");
+    if (currentEventSource) { currentEventSource.close(); currentEventSource = null; }
+  });
+  els.search.addEventListener("input", renderList);
+
+  // Deep-link via hash — back/forward in the iPad's gesture history works.
+  window.addEventListener("hashchange", () => {
+    const k = parseHash();
+    if (k && k !== activeKey) selectKey(k);
+  });
+
+  /**
+   * Open the new-brief modal optionally prefilled from a lead.
+   * If `lead` is null, fields start empty (free-form new brief).
+   * If `regenerate=true` and the lead already has a brief, we kick off
+   * a regeneration without warning — used by the refresh button.
+   */
+  async function openModalForLead(lead, regenerate = false) {
+    els.progress.style.display = "none";
+    els.progress.innerHTML = "";
+    if (lead) {
+      try {
+        const res = await fetch(API + "/api/leads/" + encodeURIComponent(lead.leadFile));
+        const full = await res.json();
+        document.getElementById("m_company").value = full.company || "";
+        document.getElementById("m_website").value = full.website || "";
+        document.getElementById("m_prospectName").value = full.prospectName || "";
+        document.getElementById("m_prospectTitle").value = full.prospectTitle || "";
+        document.getElementById("m_meetingAt").value = full.meetingAt
+          ? new Date(full.meetingAt).toISOString().slice(0, 16)
+          : "";
+        document.getElementById("m_recency").value = full.recency || "month";
+        document.getElementById("m_callObjective").value = full.callObjective || "";
+        // Store the full lead so submit can pass everything (archetype,
+        // hypothesis, competitive context, etc.) instead of only the
+        // five fields the form exposes.
+        window.__prefilledLead = full;
+      } catch (e) {
+        window.__prefilledLead = null;
+      }
+    } else {
+      // Clear all fields for a free-form new brief.
+      ["m_company","m_website","m_prospectName","m_prospectTitle","m_meetingAt","m_callObjective"]
+        .forEach(id => { document.getElementById(id).value = ""; });
+      document.getElementById("m_recency").value = "month";
+      window.__prefilledLead = null;
+    }
+    if (regenerate) {
+      // Skip the modal — submit immediately.
+      els.modalBg.classList.add("open");
+      els.submitBtn.click();
+    } else {
+      els.modalBg.classList.add("open");
+    }
+  }
+
+  els.submitBtn.addEventListener("click", async () => {
+    const company = document.getElementById("m_company").value.trim();
+    if (!company) { alert("Company is required"); return; }
+    const website = document.getElementById("m_website").value.trim() || undefined;
+    const prospectName = document.getElementById("m_prospectName").value.trim() || undefined;
+    const prospectTitle = document.getElementById("m_prospectTitle").value.trim() || undefined;
+    const meetingAtRaw = document.getElementById("m_meetingAt").value;
+    const meetingAt = meetingAtRaw ? new Date(meetingAtRaw).toISOString() : undefined;
+    const recency = document.getElementById("m_recency").value;
+    const callObjective = document.getElementById("m_callObjective").value.trim() || undefined;
+
+    // Merge: prefilled lead fields (archetype, hypothesis, competitiveContext, ...)
+    // are passed through; form fields override on collision.
+    const base = window.__prefilledLead || {};
+    const payload = {
+      ...base,
+      company, website, prospectName, prospectTitle, meetingAt, recency, callObjective,
+      aeName: base.aeName || "Ryan",
+      aeEmail: base.aeEmail || "ryan@arvayaconsulting.com",
+    };
+    // Strip falsy strings so Zod uses its defaults.
+    for (const k of Object.keys(payload)) {
+      if (payload[k] === "" || payload[k] === undefined) delete payload[k];
+    }
+
+    els.progress.style.display = "block";
+    els.progress.innerHTML = '<div class="line">▶ Submitting…</div>';
+    els.submitBtn.disabled = true;
+    inFlightLead = company;
+    renderList();
+
+    try {
+      const res = await fetch(API + "/api/briefs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error("HTTP " + res.status + ": " + await res.text());
+      const { runId } = await res.json();
+      streamProgress(runId);
+    } catch (e) {
+      els.progress.innerHTML += `<div class="line fail">✖ ${escape(e.message)}</div>`;
+      els.submitBtn.disabled = false;
+      inFlightLead = null;
+      renderList();
+    }
+  });
+
+  function streamProgress(runId) {
+    const es = new EventSource(API + "/api/briefs/" + encodeURIComponent(runId) + "/events");
+    currentEventSource = es;
+    es.addEventListener("message", (msg) => {
+      try {
+        const e = JSON.parse(msg.data);
+        appendProgress(e);
+        if (e.type === "done" || e.type === "failed") {
+          es.close();
+          currentEventSource = null;
+          els.submitBtn.disabled = false;
+          inFlightLead = null;
+          if (e.type === "done") {
+            setTimeout(async () => {
+              els.modalBg.classList.remove("open");
+              await loadIndex();
+              // Jump to the new brief if we can find it.
+              const newRow = rows.find(r => r.kind === "brief" && r.runId === e.runId);
+              if (newRow) selectKey(rowKey(newRow));
+            }, 1200);
+          } else {
+            renderList(); // refresh status badges
+          }
+        }
+      } catch (err) {
+        console.warn("progress parse error", err);
+      }
+    });
+    es.addEventListener("error", () => {
+      // EventSource auto-reconnects on transient errors; only treat as
+      // failed if we never received a "done" event.
+    });
+  }
+
+  function appendProgress(e) {
+    let line = "";
+    if (e.type === "stage_started") line = `▶ [${e.stage + 1}/${e.total}] ${e.label}…`;
+    else if (e.type === "stage_finished") line = `<span class="line done">✓ [${e.stage + 1}/${e.total}] ${e.label} — ${(e.durationMs / 1000).toFixed(1)}s${e.note ? ' — ' + e.note : ''}</span>`;
+    else if (e.type === "done") line = `<span class="line done">✅ Done in ${(e.totalMs / 1000).toFixed(1)}s</span>`;
+    else if (e.type === "failed") line = `<span class="line fail">✖ Failed: ${e.error}</span>`;
+    els.progress.innerHTML += `<div class="line">${line}</div>`;
+    els.progress.scrollTop = els.progress.scrollHeight;
+  }
+
+  // Boot
+  loadIndex();
+  </script>
+</body>
+</html>

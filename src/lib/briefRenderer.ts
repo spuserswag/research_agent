@@ -20,7 +20,9 @@
 import type {
   AttendeeIntel,
   BriefItem,
+  BuyingCommitteeMember,
   GovContract,
+  LatestNewsItem,
   Lead,
   PublishedBrief,
   Risks,
@@ -102,6 +104,8 @@ export function compileBrief(
       signalQuality,
       passedVerification,
       confidenceBanner,
+      freshness: sourcePack.freshness ?? computeFreshness(sourcePack),
+      domain: lead.website ? domainFromUrl(lead.website) : undefined,
     },
     executiveSnapshot: brief.executiveSnapshot ?? [],
     tldr: brief.tldr,
@@ -111,6 +115,8 @@ export function compileBrief(
     talkingPoints: brief.talkingPoints,
     potentialRedFlags: brief.potentialRedFlags,
     attendeeIntel: brief.attendeeIntel,
+    latestNews: brief.latestNews ?? [],
+    buyingCommittee: brief.buyingCommittee ?? [],
     objectionPredictions: brief.objectionPredictions,
     govContracts: brief.govContracts ?? [],
     prepNotes: brief.prepNotes ?? [],
@@ -144,10 +150,12 @@ export function renderBrief(
     executiveSnapshotSection(brief.executiveSnapshot ?? []),
     tldrSection(brief.tldr),
     callObjectiveSection(brief.callObjective),
+    latestNewsSection(brief.latestNews ?? []),
     labeledSection("Icebreakers", brief.icebreakers),
     labeledSection("Value Alignment Hooks", brief.valueAlignmentHooks),
     section("Potential Red Flags", brief.potentialRedFlags),
     numberedSection("Talking Points", brief.talkingPoints),
+    buyingCommitteeSection(brief.buyingCommittee ?? []),
     attendeeIntelSection(brief.attendeeIntel),
     objectionsSection(brief.objectionPredictions),
     govContractsSection(brief.govContracts ?? []),
@@ -260,6 +268,39 @@ function numberedSection(title: string, items: BriefItem[]): string {
   return `## ${title}\n\n${lines}`;
 }
 
+function latestNewsSection(items: LatestNewsItem[]): string {
+  if (!items.length) return "";
+  const bullets = items
+    .map((n) => {
+      const date = n.publishedAt ? ` _(${n.publishedAt})_` : "";
+      return `- **[${escapeBrackets(n.headline)}](${n.url})**${date} — ${n.summary} [${n.sourceId}]`;
+    })
+    .join("\n");
+  return `## 📰 Latest News\n\n${bullets}`;
+}
+
+function buyingCommitteeSection(members: BuyingCommitteeMember[]): string {
+  if (!members.length) return "";
+  const ROLE_LABEL: Record<BuyingCommitteeMember["role"], string> = {
+    champion: "🟢 Champion",
+    technical_evaluator: "🔧 Tech eval",
+    economic_buyer: "💰 Economic buyer",
+    blocker: "🛑 Blocker",
+    unknown: "❔ Unknown role",
+  };
+  const rows = members
+    .map((m) => {
+      const link = m.linkedinUrl ? ` ([LinkedIn](${m.linkedinUrl}))` : "";
+      return `- **${m.name}** — ${m.title}${link}\n  _${ROLE_LABEL[m.role]}._ ${m.rationale}${refs(m.supportingSourceIds)}`;
+    })
+    .join("\n");
+  return `## 👥 Buying Committee\n\n${rows}`;
+}
+
+function escapeBrackets(s: string): string {
+  return s.replace(/\[/g, "(").replace(/\]/g, ")");
+}
+
 function attendeeIntelSection(attendees: AttendeeIntel[]): string {
   if (!attendees.length) return "";
   const rows = attendees
@@ -351,7 +392,37 @@ function collectReferencedIds(verified: VerifiedBrief): Set<string> {
   for (const p of (brief.prepNotes ?? [])) {
     p.supportingSourceIds.forEach((id) => ids.add(id));
   }
+  for (const n of (brief.latestNews ?? [])) {
+    if (n.sourceId) ids.add(n.sourceId);
+  }
+  for (const m of (brief.buyingCommittee ?? [])) {
+    m.supportingSourceIds.forEach((id) => ids.add(id));
+  }
   return ids;
+}
+
+/**
+ * Newest `publishedAt` across the pack as ISO 8601, or undefined when
+ * no source carries a date. The orchestrator stamps this onto the
+ * SourcePack during run; this helper is the fallback when the field
+ * wasn't pre-computed (e.g. older run records replayed through the
+ * renderer).
+ */
+function computeFreshness(pack: SourcePack): string | undefined {
+  const dates = pack.sources
+    .map((s) => s.publishedAt)
+    .filter((d): d is string => typeof d === "string" && d.length > 0)
+    .sort()
+    .reverse();
+  return dates[0];
+}
+
+function domainFromUrl(url: string): string | undefined {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return undefined;
+  }
 }
 
 function formatMeeting(iso: string): string {
