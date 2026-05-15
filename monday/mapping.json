@@ -1,0 +1,55 @@
+{
+  "_readme": "monday/mapping.json — column titles must match your Monday board exactly (case-insensitive). Empty string = use keyword auto-detection. Fields in 'defaults' are used only when no column mapped to that field.",
+
+  "boardId": "18396355946",
+
+  "columnMap": {
+    "company":            "",
+    "website":            "Website",
+    "prospectName":       "POC Name",
+    "prospectTitle":      "POC Title",
+    "aeName":             "",
+    "aeEmail":            "",
+    "meetingAt":          "Initial Meeting",
+    "dealStage":          "Status",
+    "productFocus":       "Arvaya Core Competency(ies)",
+    "hypothesis":         "",
+    "callObjective":      "",
+    "meetingContext":     "Notes",
+    "prospectArchetype":  "Company Type",
+    "meetingType":        "Initial Meeting Type",
+    "engagementShape":    "",
+    "introSource":        "Introduction",
+    "introContext":       "Referrer (if applicable)",
+    "audience":           "",
+    "competitiveContext": "",
+    "excludeKeywords":    ""
+  },
+
+  "_teamEmails_readme": "Maps Monday 'Primary' people column display names → email addresses. Used for AE attribution. Keys are matched case-insensitively; partial matches are accepted. Add one entry per team member.",
+  "teamEmails": {
+    "Spenser Chun": "spenserchun@arvayaconsulting.com"
+  },
+
+  "_defaults_readme": "Last-resort fallbacks applied only when Primary column lookup AND item creator both fail to resolve the AE.",
+  "defaults": {
+    "aeName":   "Spenser",
+    "aeEmail":  "spenserchun@arvayaconsulting.com"
+  },
+
+  "_skipColumns_readme": "Columns listed here are silently consumed — not mapped to any Lead field, not sent to the AI synthesizer. Employee headcount is intentionally excluded: the Researcher fetches current figures from Perplexity/LinkedIn during the prep run, so the Monday-maintained value (which goes stale) is not used.",
+  "skipColumns": [
+    "# of Employees",
+    "Company Size (LinkedIn)",
+    "Opportunity Score",
+    "Box",
+    "Urgency (Client)",
+    "Primary",
+    "Met?",
+    "Closing Probability",
+    "Last Response Date",
+    "Follow up date",
+    "Proposal Sent",
+    "Estimated Rev"
+  ]
+}

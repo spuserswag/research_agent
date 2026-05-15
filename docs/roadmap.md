@@ -1,8 +1,10 @@
 # Crawler2 — End-to-end Roadmap
 
-_Last updated: 2026-05-12_
+_Last updated: 2026-05-15 (pre-frontend-integration review)_
 
 This is the engineering plan from "where we are right now" to "we can sell this software." Each phase has concrete tasks, effort estimate, and dependency on prior phases. Phases that can run in parallel are marked.
+
+> **2026-05-15 update:** A code review ahead of the conference-copilot integration surfaced a set of backend changes that should land BEFORE the frontend wires in, otherwise we'll be re-versioning the JSON contract or papering over backend gaps in the UI. These are now Phase **1F**, expanded Phase **2B**, and three new Phase **3** sub-phases (3E/3F/3G/3H). See those sections for detail.
 
 Status legend: ✅ done · 🟡 in progress · ⬜ not started · ⛔ blocker
 
@@ -56,6 +58,23 @@ Pure-content work, no infrastructure change:
 - ✅ `conference-copilot (1) (1)/` renamed to `conference-copilot/`
 - ⬜ Single root `README.md` describing one backend + one frontend — **deferred to Phase 2**
 
+### 1F — Schema additions before the frontend wires in (NEW, 2026-05-15)
+
+**Goal:** lock the `PublishedBrief` JSON contract to schemaVersion 1 with everything the UI will need, so we don't ship and immediately bump to v2. Estimated **1.5 days**.
+
+Each item below is a small, isolated change in `src/types.ts` + downstream renderers/prompts. None of them require infrastructure work; they're all schema + prompt + verifier wiring.
+
+- ⬜ **`latestNews` as a first-class section.** Add `latestNews: Array<{ headline, url, publishedAt, summary, sourceId }>` to `DraftBriefSchema` and `PublishedBriefSchema`. Today news is diffused across `executiveSnapshot`, `talkingPoints`, and `icebreakers`; the goal-statement ("latest news") wants it explicit. PersonalizationWriter prompt updated to populate this from `Source.category === "news"` entries newest-first, capped at 5.
+- ⬜ **`buyingCommittee` separate from `attendeeIntel`.** Keep `attendeeIntel.max(4)` for "who is on this call." Add `buyingCommittee.max(8)` with role tags (`champion | technical_evaluator | economic_buyer | blocker | unknown`) populated from Apollo people search. The goal-statement's "key stakeholders" lives here, not in `attendeeIntel`.
+- ⬜ **`evidenceQuote` on `BriefItemSchema`.** Today only `RiskSchema` carries a verbatim quote, so the deterministic verifier in `src/lib/verify.ts` only spot-checks risks; BriefItems are verified by source-id-existence only (much weaker). Adding the field plus a substring check across `icebreakers / valueAlignmentHooks / potentialRedFlags / talkingPoints / prepNotes` closes the highest-leverage hallucination gap.
+- ⬜ **`recency` knob on `LeadSchema`.** Today `src/agents/researcher.ts` hardcodes `recency: "month"` for all Perplexity calls. Add `recency?: "day" | "week" | "month"` (default `"month"`) so the frontend can pass `"week"` for follow-up meetings.
+- ⬜ **`freshness` on `SourcePackSchema` and `PublishedBrief.meta`.** Compute `freshness = max(sources[].publishedAt)` at orchestrator finish and persist. The frontend will want to render "research generated 6h ago, newest source is 11 days old" — today both numbers are uncomputed.
+- ⬜ **`runId` required at the time `compileBrief` runs.** Today `LeadSchema.runId` is optional and `compileBrief` falls back to `""`. The orchestrator already generates one in `buildRunId()` — propagate it back into `lead.runId` before calling `compileBrief` so `PublishedBrief.meta.runId` is never empty. Otherwise frontend sorting/listing breaks silently.
+- ⬜ **Stable Apollo people source IDs.** Today `src-apollo-firstname-lastname` collides on common names (two "John Smith"s across runs share an ID). Switch to `src-apollo-<sha1(linkedinUrl).slice(0,10)>` and fall back to the existing scheme only when LinkedIn URL is absent.
+- ⬜ **`PublishedBrief.meta.schemaVersion` stays at `1`.** Bump only if any of the above ends up requiring a breaking shape change. The goal of doing this BEFORE Phase 2 is to land all of them under v1.
+
+**Definition of done:** `tsc --noEmit` clean, `vitest run` green, `samples/exampleBrief.md` regenerated from a real run that exercises the new fields, `docs/brief-json-contract.md` updated.
+
 ---
 
 ## Phase 2 — Conference-copilot frontend integration
@@ -68,12 +87,15 @@ Pure-content work, no infrastructure change:
 - ⬜ Add `prisma migrate dev` migration.
 - ⬜ Update `Exhibitor` model to include a `latestBriefId` cache for fast list-view rendering.
 
-### 2B — Backend API endpoints (1-2 days)
+### 2B — Backend API endpoints (2-3 days, was 1-2)
 
 - ⬜ `POST /api/exhibitors/:id/brief` — kick off a brief generation run. Returns `runId`. Status starts as "queued".
 - ⬜ `GET  /api/exhibitors/:id/brief` — return the current latest brief (or `null` + status if in-flight).
 - ⬜ `GET  /api/briefs/:runId` — poll status of a specific run.
-- ⬜ Backend job runner: when a brief is queued, write a temporary `leads/<id>.json`, shell out to `npm run prep -- --lead <path>`, capture stdout/stderr, parse `<profileFolder>/brief.json`, write to the `Brief` row, mark `status=done` (or `failed` with error).
+- ⬜ `GET  /api/briefs/:runId/events` — **SSE stream** of stage progress events (`stage_started`, `stage_finished`, `done`, `failed`). Today `src/orchestrator.ts` writes spinner frames to `process.stdout`; refactor `progressStart` / `progressDone` to emit structured events on an `EventEmitter` that both the CLI (via the existing renderer) and the HTTP server (via SSE) can consume. Without this the UI is stuck polling, which feels slow on a 1–3 minute run.
+- ⬜ **`BriefStore` abstraction** in `src/lib/briefStore.ts`. Interface: `saveRun(runRecord) / loadBrief(runId) / listRuns(filter)`. First implementation is the existing filesystem layout under `profilesDir`. Goal: when Phase 4 lands and we swap to Postgres/S3, it's one file change, not a refactor across orchestrator + renderer + Express server.
+- ⬜ Backend job runner: when a brief is queued, write a temporary `leads/<id>.json`, **call `runOrchestrator` directly in-process** (no shelling out — we lose progress events and structured errors that way) and persist via `BriefStore`. Mark `status=done` (or `failed` with error).
+- ⬜ **Wire `sendBriefEmail` into the orchestrator behind a flag.** `src/tools/email.ts` exists and works; nothing calls it. Add `lead.deliverByEmail: boolean` (default `false`) and a `POST /api/briefs/:runId/send` endpoint for manual re-send. Populates `RunRecord.delivery`.
 
 ### 2C — Frontend Brief Drawer (2 days)
 
@@ -122,6 +144,38 @@ Pure-content work, no infrastructure change:
 ### 3D — Caching parity (½ day)
 
 - ⬜ The Python pipeline has a fetch-cache + extraction-cache with explicit version stamps. The TS backend has profile-level caching but no per-fetch cache. Either: (a) port the cache, or (b) decide we don't need it and document the cost implications.
+
+### 3E — Eval / regression harness (NEW, 2026-05-15) (1-2 days)
+
+**Goal:** quality changes (prompt edits, model swaps, schema changes) stop silently regressing. Should land before AEs see the UI.
+
+- ⬜ Curate 10–15 anchor leads spanning archetypes (`aec_firm`, `aec_vendor`, `other`) and footprint depth (rich / moderate / thin). Start with `egnyte.json`, `joist-ai.json`, `seev.json` plus 7–12 new ones from `companies.csv`.
+- ⬜ For each, capture a hand-graded "good brief" reference and a per-section rubric: source count, claim-grounding rate (passes deterministic verifier), hook specificity (rubric-scored 1–5 by a human pass), no PII in non-attendeeIntel sections.
+- ⬜ Script `npm run eval` that runs the pipeline on each anchor, scores against the rubric (mechanical parts automated, judgement parts spot-checked), and prints a diff vs. the last committed baseline.
+- ⬜ CI hook: fail the build if mechanical scores drop more than X% from baseline.
+
+### 3F — Cost cap per AE / per org (NEW, 2026-05-15) (½ day)
+
+**Goal:** the per-run Firecrawl cap protects against a runaway tool loop in a single run; nothing today protects against an AE firing 50 runs in an hour.
+
+- ⬜ Extend `src/lib/costLedger.ts` with a daily-and-monthly budget store (initially in-memory + SQLite-backed snapshot; eventually Postgres in Phase 4).
+- ⬜ Pre-flight check in the API layer: if AE or org is over budget, return HTTP 402 with a structured `budgetExceeded: { spent, cap, period }` payload that the UI renders.
+- ⬜ Configurable per-AE default cap (e.g. `$10/day, $200/month`) and per-org cap, override via admin endpoint.
+- ⬜ Bonus: same-day `(domain, YYYY-MM-DD)` SourcePack cache (the natural companion — implemented in 3D when we get there). Re-runs hit the cache and only spend ~$0.05 on Writer+Verifier instead of $0.30–$0.80.
+
+### 3G — Writer robustness on thin-footprint companies (NEW, 2026-05-15) (½ day)
+
+**Goal:** the Writer can't throw on small/private companies where Apollo+Perplexity surface very little.
+
+- ⬜ Soften `DraftBriefSchema` min counts: `icebreakers.min(0).max(5)`, `valueAlignmentHooks.min(0).max(5)`, `talkingPoints.min(0).max(8)`. Today the floors of 2/2/3 force the Writer to hallucinate to satisfy the schema, after which the verifier strips the hallucinations and the AE sees an empty brief with a "limited confidence" banner and no explanation.
+- ⬜ Renderer fallback copy: when a section has 0 items AND `signalQuality === "low"`, render a one-line explanation ("Footprint too thin to surface icebreakers — try the open-questions section instead") rather than `_None._`.
+- ⬜ Verifier prompt: when `src-meta-thin` is present in the SourcePack, treat empty sections as confirmed-empty rather than verification failures.
+
+### 3H — Same-day SourcePack cache (NEW, 2026-05-15) (½ day, optional companion to 3D/3F)
+
+- ⬜ `(normalised-domain, YYYY-MM-DD) → SourcePack` cache. Re-running the same company twice in one day reuses Apollo + Perplexity output; the orchestrator only re-runs SignalExtractor → Risk → Writer → Verifier.
+- ⬜ Cache key explicitly excludes `lead.runId`, `lead.aeEmail`, `lead.callObjective` etc. — only the company-identity inputs participate. Downstream agents still re-personalize.
+- ⬜ Cache TTL = 24h; manual `?refresh=true` bypasses.
 
 ---
 
@@ -188,18 +242,21 @@ Pure-content work, no infrastructure change:
 
 The shortest path to "we can sell this" is:
 
-1. Phase **1B** (content port) — 1-2 days
-2. Phase **1C** (brief JSON contract) — 1 day
-3. Phase **1D** (output shape unification) — 1 day
-4. Phase **1E** (retire Python) — ½ day
-5. Phase **2A-2C** (frontend Prisma + API + drawer) — 4-5 days
-6. Phase **4A** (auth) — 3-4 days
-7. Phase **4B** (billing) — 2-3 days
-8. Phase **5** (legal sign-off) — runs in parallel, depends on Phase 4 outputs
+1. Phase **1B** (content port) — 1-2 days ✅
+2. Phase **1C** (brief JSON contract) — 1 day ✅
+3. Phase **1D** (output shape unification) — 1 day ✅
+4. Phase **1E** (retire Python) — ½ day ✅
+5. Phase **1F** (schema additions before frontend) — **1.5 days, NEW** ⬅ next up
+6. Phase **2A-2C** (frontend Prisma + API + drawer) — 5-6 days (was 4-5; +1 for SSE + BriefStore + email wiring in 2B)
+7. Phase **3G** (Writer robustness on thin footprint) — ½ day, in parallel with 2C
+8. Phase **3E** (eval harness) — 1-2 days, should land before AEs touch the UI
+9. Phase **4A** (auth) — 3-4 days
+10. Phase **4B** (billing) — 2-3 days
+11. Phase **5** (legal sign-off) — runs in parallel, depends on Phase 4 outputs
 
-**Critical-path total: ~14-17 working days for one engineer + legal counsel in parallel.**
+**Critical-path total: ~17-21 working days for one engineer + legal counsel in parallel** (was 14-17 before the 2026-05-15 review).
 
-Phase 3 (production hardening) and Phase 6 (GTM) can run on a separate track and don't block the critical path until the very end.
+Phase 3 (the rest of production hardening) and Phase 6 (GTM) can run on a separate track and don't block the critical path until the very end. **3F (cost cap) and 3H (same-day cache)** should land before the eval harness so eval runs don't blow the budget.
 
 ---
 
@@ -214,6 +271,10 @@ Phase 3 (production hardening) and Phase 6 (GTM) can run on a separate track and
 🟡 **Conference-floor mobile UX** — the App.tsx works fine on desktop. The original CTO request was specifically for conference-floor use (walking, phone, business cards). The current frontend doesn't have a mobile-first treatment or a card-capture feature. Add to Phase 2 if confirming the use case.
 
 🟡 **Two backends still alive during the gap** — if Phases 1B-1E take longer than 1 sprint, the team has to be disciplined about not adding features to `prospect_brief/`. Document a code-freeze date.
+
+🟡 **Schema v1 lock-in** (NEW, 2026-05-15) — if Phase 2 ships before Phase 1F, we'll be forced to publish `PublishedBrief schemaVersion: 2` within a sprint, and any external frontend or SDK that integrated against v1 has to update. Land 1F first, even if it adds 1.5 days to the critical path.
+
+🟡 **`DraftBriefSchema` minimum-count throw** (NEW, 2026-05-15) — until Phase 3G lands, the Writer can hard-throw on thin-footprint companies (Zod rejects `icebreakers.length < 2`). The orchestrator catches it and writes the error to `run.json`, but the frontend will surface this as a generic "brief generation failed" which is the worst possible UX for a small private company that just happens to have thin public footprint. Schedule 3G in parallel with 2C, not after it.
 
 ---
 
