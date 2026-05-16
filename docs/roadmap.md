@@ -150,6 +150,14 @@ Built with raw Node `http` rather than Express to avoid a dep — see `src/serve
 
 - ⬜ The Python pipeline has a fetch-cache + extraction-cache with explicit version stamps. The TS backend has profile-level caching but no per-fetch cache. Either: (a) port the cache, or (b) decide we don't need it and document the cost implications.
 
+### 3X — Thin-signal improvements (CROSS-CUT, 2026-05-15)
+
+Brief recall and quality on small/private/recent-startup prospects is the biggest open quality problem. Tracked separately in [`docs/thin-signal-improvements.md`](./thin-signal-improvements.md) — 23 ranked items spanning new tools, prompt changes, orchestrator-level retries, and UI affordances. The top 6 items are ~1 week of focused work and would lift average brief quality on the AECTech-2026 target list meaningfully.
+
+### 3Y — Cost optimization (CROSS-CUT, 2026-05-15)
+
+Per-brief cost is currently $0.30–$0.80 and **most** of that recurs on every refresh because the pipeline doesn't dedupe between runs. Tracked separately in [`docs/cost-optimization.md`](./cost-optimization.md) — 23 ranked items spanning same-day caching, source-level dedup, incremental regeneration, source-digest passing, model selection (gpt-4o-mini for cheap-judgement agents), and smart scheduling. **Tier 1 alone takes the weekly steady-state from ~$20 to ~$5** on the 40-company pipeline.
+
 ### 3E — Eval / regression harness (NEW, 2026-05-15) (1-2 days)
 
 **Goal:** quality changes (prompt edits, model swaps, schema changes) stop silently regressing. Should land before AEs see the UI.
